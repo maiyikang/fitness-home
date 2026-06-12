@@ -8,7 +8,6 @@ export default function Home() {
 
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
-  const [bodyFat, setBodyFat] = useState("");
 
   function handleStart() {
     router.push("/my");
@@ -22,7 +21,7 @@ export default function Home() {
         </h1>
 
         <p className="mt-3 text-gray-600">
-          Start with your body information.
+          Start with your basic body information.
         </p>
 
         <div className="mt-8 space-y-6">
@@ -50,20 +49,6 @@ export default function Home() {
               value={weight}
               onChange={(event) => setWeight(event.target.value)}
               placeholder="Enter weight in kg"
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Body Fat %
-            </label>
-
-            <input
-              type="number"
-              value={bodyFat}
-              onChange={(event) => setBodyFat(event.target.value)}
-              placeholder="Enter body fat percentage"
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
