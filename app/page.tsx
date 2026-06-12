@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [bodyFat, setBodyFat] = useState("");
 
   function handleStart() {
-    console.log({
-      height,
-      weight,
-      bodyFat,
-    });
+    router.push("/my");
   }
 
   return (
@@ -35,7 +34,7 @@ export default function Home() {
             <input
               type="number"
               value={height}
-              onChange={(e) => setHeight(e.target.value)}
+              onChange={(event) => setHeight(event.target.value)}
               placeholder="Enter height in cm"
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
@@ -49,7 +48,7 @@ export default function Home() {
             <input
               type="number"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(event) => setWeight(event.target.value)}
               placeholder="Enter weight in kg"
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
@@ -63,13 +62,14 @@ export default function Home() {
             <input
               type="number"
               value={bodyFat}
-              onChange={(e) => setBodyFat(e.target.value)}
+              onChange={(event) => setBodyFat(event.target.value)}
               placeholder="Enter body fat percentage"
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
 
           <button
+            type="button"
             onClick={handleStart}
             className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white"
           >
