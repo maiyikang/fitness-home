@@ -11,7 +11,7 @@ export default function MyPage() {
   const [favoriteFoods, setFavoriteFoods] = useState("");
 
   return (
-    <main className="min-h-screen bg-gray-50 px-6 py-10">
+    <main className="min-h-screen bg-gray-50 px-6 pb-24 pt-10">
       <section className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-bold text-gray-900">
           My Profile
@@ -26,11 +26,10 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Body Fat %
             </label>
-
             <input
               type="number"
               value={bodyFat}
-              onChange={(e) => setBodyFat(e.target.value)}
+              onChange={(event) => setBodyFat(event.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -39,11 +38,10 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Daily Protein Target (g)
             </label>
-
             <input
               type="number"
               value={proteinTarget}
-              onChange={(e) => setProteinTarget(e.target.value)}
+              onChange={(event) => setProteinTarget(event.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -52,11 +50,10 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Daily Fiber Target (g)
             </label>
-
             <input
               type="number"
               value={fiberTarget}
-              onChange={(e) => setFiberTarget(e.target.value)}
+              onChange={(event) => setFiberTarget(event.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -65,11 +62,10 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Daily Carb Target (g)
             </label>
-
             <input
               type="number"
               value={carbTarget}
-              onChange={(e) => setCarbTarget(e.target.value)}
+              onChange={(event) => setCarbTarget(event.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -78,11 +74,10 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Daily Fat Target (g)
             </label>
-
             <input
               type="number"
               value={fatTarget}
-              onChange={(e) => setFatTarget(e.target.value)}
+              onChange={(event) => setFatTarget(event.target.value)}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -91,23 +86,27 @@ export default function MyPage() {
             <label className="block text-sm font-medium text-gray-700">
               Favorite Foods
             </label>
-
             <input
               type="text"
               value={favoriteFoods}
-              onChange={(e) => setFavoriteFoods(e.target.value)}
+              onChange={(event) => setFavoriteFoods(event.target.value)}
               placeholder="Sushi, Chicken, Steak..."
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
 
-          <button
-            className="rounded-lg bg-black px-6 py-3 font-medium text-white"
-          >
+          <button className="rounded-lg bg-black px-6 py-3 font-medium text-white">
             Save Preferences
           </button>
         </div>
       </section>
+
+      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white px-6 py-3">
+        <div className="mx-auto flex max-w-3xl justify-around text-sm font-medium text-gray-700">
+          <a href="/restaurants">Restaurants</a>
+          <a href="/my">My</a>
+        </div>
+      </nav>
     </main>
   );
 }
