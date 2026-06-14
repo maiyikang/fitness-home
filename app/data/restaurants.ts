@@ -1,4 +1,6 @@
-export const restaurants = [
+import type { Restaurant } from "@/app/types/restaurant";
+
+export const restaurants: Restaurant[] = [
   {
     id: "healthy-bowl",
     name: "Healthy Bowl",
@@ -10,6 +12,38 @@ export const restaurants = [
     healthScore: 95,
     matchScore: 96,
     tags: ["High Protein", "Low Fat", "Healthy Meal"],
+    menu: [
+      {
+        id: "chicken-protein-bowl",
+        name: "Chicken Protein Bowl",
+        calories: 520,
+        protein: 45,
+        carbs: 48,
+        fat: 14,
+        fiber: 9,
+        tags: ["High Protein", "Low Fat", "Healthy"],
+      },
+      {
+        id: "salmon-green-bowl",
+        name: "Salmon Green Bowl",
+        calories: 610,
+        protein: 38,
+        carbs: 42,
+        fat: 24,
+        fiber: 8,
+        tags: ["Omega 3", "Healthy", "Balanced"],
+      },
+      {
+        id: "tofu-fiber-bowl",
+        name: "Tofu Fiber Bowl",
+        calories: 480,
+        protein: 28,
+        carbs: 55,
+        fat: 12,
+        fiber: 14,
+        tags: ["High Fiber", "Vegetarian", "Low Calorie"],
+      },
+    ],
   },
   {
     id: "tokyo-sushi",
@@ -22,6 +56,38 @@ export const restaurants = [
     healthScore: 82,
     matchScore: 88,
     tags: ["Sushi", "Balanced", "Normal Meal"],
+    menu: [
+      {
+        id: "salmon-sushi-set",
+        name: "Salmon Sushi Set",
+        calories: 620,
+        protein: 36,
+        carbs: 68,
+        fat: 18,
+        fiber: 4,
+        tags: ["Balanced", "Sushi", "Protein"],
+      },
+      {
+        id: "tuna-rice-bowl",
+        name: "Tuna Rice Bowl",
+        calories: 580,
+        protein: 42,
+        carbs: 62,
+        fat: 12,
+        fiber: 5,
+        tags: ["High Protein", "Balanced", "Seafood"],
+      },
+      {
+        id: "tempura-roll-set",
+        name: "Tempura Roll Set",
+        calories: 780,
+        protein: 25,
+        carbs: 82,
+        fat: 34,
+        fiber: 3,
+        tags: ["Higher Calories", "Cheat Option", "Sushi"],
+      },
+    ],
   },
   {
     id: "burger-house",
@@ -34,5 +100,37 @@ export const restaurants = [
     healthScore: 55,
     matchScore: 72,
     tags: ["Cheat Meal", "High Calories", "Burger"],
+    menu: [
+      {
+        id: "classic-beef-burger",
+        name: "Classic Beef Burger",
+        calories: 860,
+        protein: 38,
+        carbs: 72,
+        fat: 42,
+        fiber: 4,
+        tags: ["Burger", "Cheat Meal", "High Calories"],
+      },
+      {
+        id: "grilled-chicken-burger",
+        name: "Grilled Chicken Burger",
+        calories: 650,
+        protein: 44,
+        carbs: 58,
+        fat: 22,
+        fiber: 5,
+        tags: ["High Protein", "Better Choice", "Burger"],
+      },
+      {
+        id: "double-cheese-burger",
+        name: "Double Cheese Burger",
+        calories: 1050,
+        protein: 55,
+        carbs: 76,
+        fat: 58,
+        fiber: 3,
+        tags: ["High Protein", "High Calories", "Cheat Meal"],
+      },
+    ],
   },
 ];

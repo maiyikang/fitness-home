@@ -1,12 +1,9 @@
 import type { UserProfile } from "@/app/types/profile";
+import type { Restaurant } from "@/app/types/restaurant";
 
-type RestaurantForScoring = {
-  averageCalories: number;
-  proteinScore: number;
-  healthScore: number;
-  category: string;
-  tags: string[];
-};
+import { isCuisineMatch } from "@/app/lib/cuisine";
+import { getRecommendedMenuItems } from "@/app/lib/menuRecommendation";
+import { calculateRestaurantHealthScore } from "@/app/lib/restaurantHealth";
 
 export type MatchScoreReason = {
   label: string;
@@ -15,144 +12,147 @@ export type MatchScoreReason = {
 };
 
 export function calculateMatchScore(
-  restaurant: RestaurantForScoring,
+  restaurant: Restaurant,
   profile: UserProfile
 ): number {
-  const reasons = getMatchScoreReasons(restaurant, profile);
+  const menuQualityScore = calculateMenuQualityScore(restaurant, profile);
+  const restaurantHealthScore = calculateRestaurantHealthScore(
+    restaurant
+  ).score;
+  const restaurantHealthWeightedScore =
+    calculateRestaurantHealthWeightedScore(restaurantHealthScore);
+  const cuisineMatchScore = calculateCuisineMatchScore(restaurant, profile);
+  const mealTypeMatchScore = calculateMealTypeMatchScore(restaurant, profile);
 
-  const totalScore = reasons.reduce((sum, reason) => {
-    return sum + reason.points;
-  }, 60);
-
-  return Math.max(0, Math.min(100, totalScore));
+  return Math.round(
+    menuQualityScore +
+      restaurantHealthWeightedScore +
+      cuisineMatchScore +
+      mealTypeMatchScore
+  );
 }
 
 export function getMatchScoreReasons(
-  restaurant: RestaurantForScoring,
+  restaurant: Restaurant,
   profile: UserProfile
 ): MatchScoreReason[] {
   const reasons: MatchScoreReason[] = [];
 
-  if (profile.goal === "lose-fat") {
-    if (restaurant.averageCalories <= 650) {
-      reasons.push({
-        label: "Good for fat loss",
-        points: 12,
-        type: "positive",
-      });
-    } else {
-      reasons.push({
-        label: "Calories may be high for fat loss",
-        points: -8,
-        type: "negative",
-      });
-    }
-  }
+  const menuQualityScore = calculateMenuQualityScore(restaurant, profile);
+  const restaurantHealthScore = calculateRestaurantHealthScore(
+    restaurant
+  ).score;
+  const restaurantHealthWeightedScore =
+    calculateRestaurantHealthWeightedScore(restaurantHealthScore);
+  const cuisineMatchScore = calculateCuisineMatchScore(restaurant, profile);
+  const mealTypeMatchScore = calculateMealTypeMatchScore(restaurant, profile);
 
-  if (profile.goal === "gain-muscle") {
-    if (restaurant.proteinScore >= 8) {
-      reasons.push({
-        label: "High protein choice",
-        points: 12,
-        type: "positive",
-      });
-    } else {
-      reasons.push({
-        label: "Protein may be too low",
-        points: -6,
-        type: "negative",
-      });
-    }
-  }
-
-  if (profile.goal === "maintain") {
-    if (
-      restaurant.averageCalories >= 500 &&
-      restaurant.averageCalories <= 850
-    ) {
-      reasons.push({
-        label: "Balanced calories for maintenance",
-        points: 8,
-        type: "positive",
-      });
-    }
-  }
-
-  if (profile.mealType === "healthy") {
-    if (restaurant.healthScore >= 8) {
-      reasons.push({
-        label: "Strong healthy meal match",
-        points: 10,
-        type: "positive",
-      });
-    } else {
-      reasons.push({
-        label: "Not the healthiest option",
-        points: -5,
-        type: "negative",
-      });
-    }
-  }
-
-  if (profile.mealType === "normal") {
-    reasons.push({
-      label: "Suitable for a normal meal",
-      points: 5,
-      type: "neutral",
-    });
-  }
-
-  if (profile.mealType === "cheat") {
-    reasons.push({
-      label: "Flexible choice for a cheat meal",
-      points: 5,
-      type: "neutral",
-    });
-  }
-
-  const lowerCategory = restaurant.category.toLowerCase();
-
-  const hasCuisineMatch = profile.favoriteCuisine.some((cuisine) => {
-    const lowerCuisine = cuisine.toLowerCase();
-
-    return (
-      lowerCuisine !== "normal" &&
-      lowerCuisine !== "" &&
-      lowerCategory.includes(lowerCuisine)
-    );
+  reasons.push({
+    label: "Recommended menu quality",
+    points: Math.round(menuQualityScore),
+    type: "positive",
   });
 
-  if (hasCuisineMatch) {
+  reasons.push({
+    label: `Menu nutrition quality (${restaurantHealthScore}/100)`,
+    points: Math.round(restaurantHealthWeightedScore),
+    type: restaurantHealthScore >= 70 ? "positive" : "neutral",
+  });
+
+  if (cuisineMatchScore > 0) {
     reasons.push({
       label: "Matches your favorite cuisine",
-      points: 10,
+      points: Math.round(cuisineMatchScore),
       type: "positive",
     });
   }
 
-  if (restaurant.tags.includes("High Protein")) {
+  if (mealTypeMatchScore > 0) {
     reasons.push({
-      label: "Menu includes high protein options",
-      points: 8,
+      label: "Matches your selected meal type",
+      points: Math.round(mealTypeMatchScore),
       type: "positive",
     });
   }
 
-  if (restaurant.tags.includes("Low Calorie")) {
+  if (restaurantHealthScore >= 85) {
     reasons.push({
-      label: "Menu includes low calorie options",
-      points: 8,
+      label: "Excellent overall menu health",
+      points: 0,
       type: "positive",
     });
-  }
-
-  if (restaurant.healthScore >= 8) {
+  } else if (restaurantHealthScore >= 70) {
     reasons.push({
-      label: "Overall healthy restaurant",
-      points: 7,
+      label: "Good overall menu health",
+      points: 0,
       type: "positive",
+    });
+  } else if (restaurantHealthScore >= 55) {
+    reasons.push({
+      label: "Average overall menu health",
+      points: 0,
+      type: "neutral",
+    });
+  } else {
+    reasons.push({
+      label: "Menu nutrition quality could be improved",
+      points: 0,
+      type: "negative",
     });
   }
 
   return reasons;
+}
+
+function calculateMenuQualityScore(
+  restaurant: Restaurant,
+  profile: UserProfile
+): number {
+  const recommendedMenuItems = getRecommendedMenuItems(restaurant, profile);
+
+  if (recommendedMenuItems.length === 0) {
+    return 0;
+  }
+
+  const averageRecommendedMenuScore =
+    recommendedMenuItems.reduce((sum, item) => {
+      return sum + item.recommendationScore;
+    }, 0) / recommendedMenuItems.length;
+
+  return Math.min(50, averageRecommendedMenuScore * 0.5);
+}
+
+function calculateRestaurantHealthWeightedScore(
+  restaurantHealthScore: number
+): number {
+  return Math.min(20, restaurantHealthScore * 0.2);
+}
+
+function calculateCuisineMatchScore(
+  restaurant: Restaurant,
+  profile: UserProfile
+): number {
+  const hasCuisineMatch = isCuisineMatch(
+    profile.favoriteCuisine,
+    restaurant.cuisine,
+    restaurant.category,
+    restaurant.tags
+  );
+
+  return hasCuisineMatch ? 15 : 0;
+}
+
+function calculateMealTypeMatchScore(
+  restaurant: Restaurant,
+  profile: UserProfile
+): number {
+  if (restaurant.mealType === profile.mealType) {
+    return 15;
+  }
+
+  if (profile.mealType === "normal") {
+    return 8;
+  }
+
+  return 0;
 }

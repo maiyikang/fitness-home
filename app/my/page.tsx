@@ -18,25 +18,47 @@ import type { UserProfile } from "@/app/types/profile";
 
 export default function MyPage() {
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
+  const [heightInput, setHeightInput] = useState(String(defaultProfile.height));
+  const [weightInput, setWeightInput] = useState(String(defaultProfile.weight));
+  const [ageInput, setAgeInput] = useState(String(defaultProfile.age));
   const [savedMessage, setSavedMessage] = useState("");
 
   useEffect(() => {
     const storedProfile = getStoredProfile();
+
     setProfile(storedProfile);
+    setHeightInput(String(storedProfile.height));
+    setWeightInput(String(storedProfile.weight));
+    setAgeInput(String(storedProfile.age));
   }, []);
 
   function handleSave() {
-    saveStoredProfile(profile);
+    const profileToSave: UserProfile = {
+      ...profile,
+      height: heightInput === "" ? 0 : Number(heightInput),
+      weight: weightInput === "" ? 0 : Number(weightInput),
+      age: ageInput === "" ? 0 : Number(ageInput),
+    };
+
+    setProfile(profileToSave);
+    saveStoredProfile(profileToSave);
 
     window.dispatchEvent(new Event("profileUpdated"));
 
     setSavedMessage("Profile saved successfully.");
   }
 
-  const bmi = calculateBMI(profile.height, profile.weight);
-  const bmr = calculateBMR(profile);
-  const tdee = calculateTDEE(profile);
-  const nutritionTargets = calculateNutritionTargets(profile);
+  const safeProfile: UserProfile = {
+    ...profile,
+    height: heightInput === "" ? 0 : Number(heightInput),
+    weight: weightInput === "" ? 0 : Number(weightInput),
+    age: ageInput === "" ? 0 : Number(ageInput),
+  };
+
+  const bmi = calculateBMI(safeProfile.height, safeProfile.weight);
+  const bmr = calculateBMR(safeProfile);
+  const tdee = calculateTDEE(safeProfile);
+  const nutritionTargets = calculateNutritionTargets(safeProfile);
 
   return (
     <main className="min-h-screen bg-gray-50 px-6 pb-24 pt-10">
@@ -133,13 +155,10 @@ export default function MyPage() {
             </label>
             <input
               type="number"
-              value={profile.height}
-              onChange={(event) =>
-                setProfile({
-                  ...profile,
-                  height: Number(event.target.value),
-                })
-              }
+              value={heightInput}
+              onChange={(event) => {
+                setHeightInput(event.target.value);
+              }}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -150,13 +169,10 @@ export default function MyPage() {
             </label>
             <input
               type="number"
-              value={profile.weight}
-              onChange={(event) =>
-                setProfile({
-                  ...profile,
-                  weight: Number(event.target.value),
-                })
-              }
+              value={weightInput}
+              onChange={(event) => {
+                setWeightInput(event.target.value);
+              }}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>
@@ -167,13 +183,10 @@ export default function MyPage() {
             </label>
             <input
               type="number"
-              value={profile.age}
-              onChange={(event) =>
-                setProfile({
-                  ...profile,
-                  age: Number(event.target.value),
-                })
-              }
+              value={ageInput}
+              onChange={(event) => {
+                setAgeInput(event.target.value);
+              }}
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3"
             />
           </div>

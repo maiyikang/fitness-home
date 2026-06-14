@@ -5,24 +5,66 @@ import { useEffect, useState } from "react";
 
 import BottomNavigation from "@/app/components/BottomNavigation";
 import FavoriteButton from "@/app/components/FavoriteButton";
-import { restaurants } from "@/app/data/restaurants";
+import { restaurants as sampleRestaurants } from "@/app/data/restaurants";
 import { profile as defaultProfile } from "@/app/data/profile";
 import { getStoredProfile } from "@/app/lib/profileStorage";
+import { saveRealRestaurants } from "@/app/lib/realRestaurantsStorage";
 import {
   calculateMatchScore,
   getMatchScoreReasons,
 } from "@/app/lib/scoring";
 import type { UserProfile } from "@/app/types/profile";
+import type { Restaurant } from "@/app/types/restaurant";
 
 export default function RestaurantsPage() {
   const [userProfile, setUserProfile] =
     useState<UserProfile>(defaultProfile);
 
+  const [restaurantList, setRestaurantList] =
+    useState<Restaurant[]>(sampleRestaurants);
+
+  const [isLoadingPlaces, setIsLoadingPlaces] = useState(false);
+  const [placesMessage, setPlacesMessage] = useState("");
+
   useEffect(() => {
     setUserProfile(getStoredProfile());
   }, []);
 
-  const sortedRestaurants = [...restaurants].sort((a, b) => {
+  async function handleLoadRealRestaurants() {
+    setIsLoadingPlaces(true);
+    setPlacesMessage("");
+
+    try {
+      const response = await fetch("/api/places/search");
+
+      if (!response.ok) {
+        setPlacesMessage("Failed to load real restaurants.");
+        return;
+      }
+
+      const realRestaurants = (await response.json()) as Restaurant[];
+
+      if (realRestaurants.length === 0) {
+        setPlacesMessage("No restaurants found from Google Places.");
+        return;
+      }
+
+      saveRealRestaurants(realRestaurants);
+      setRestaurantList(realRestaurants);
+      setPlacesMessage("Real restaurants loaded from Google Places.");
+    } catch {
+      setPlacesMessage("Something went wrong while loading restaurants.");
+    } finally {
+      setIsLoadingPlaces(false);
+    }
+  }
+
+  function handleUseSampleRestaurants() {
+    setRestaurantList(sampleRestaurants);
+    setPlacesMessage("Sample restaurants restored.");
+  }
+
+  const sortedRestaurants = [...restaurantList].sort((a, b) => {
     return (
       calculateMatchScore(b, userProfile) -
       calculateMatchScore(a, userProfile)
@@ -40,6 +82,31 @@ export default function RestaurantsPage() {
           <p className="mt-2 text-sm text-gray-500">
             Ranked by your fitness goals, calories, protein, and meal preference.
           </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleLoadRealRestaurants}
+              disabled={isLoadingPlaces}
+              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {isLoadingPlaces ? "Loading..." : "Load Real Restaurants"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleUseSampleRestaurants}
+              className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm"
+            >
+              Use Sample Data
+            </button>
+          </div>
+
+          {placesMessage && (
+            <p className="mt-3 text-sm font-medium text-green-700">
+              {placesMessage}
+            </p>
+          )}
         </section>
 
         <section className="space-y-4">
@@ -59,7 +126,7 @@ export default function RestaurantsPage() {
             return (
               <Link
                 key={restaurant.id}
-                href={`/restaurants/${restaurant.id}`}
+                href={`/restaurants/${encodeURIComponent(restaurant.id)}`}
                 className="block rounded-3xl bg-white p-5 shadow-sm transition active:scale-[0.98]"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -70,6 +137,10 @@ export default function RestaurantsPage() {
 
                     <p className="mt-1 text-sm text-gray-500">
                       {restaurant.category}
+                    </p>
+
+                    <p className="mt-1 text-xs font-medium text-gray-400">
+                      {restaurant.cuisine}
                     </p>
                   </div>
 
