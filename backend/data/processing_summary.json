@@ -1,0 +1,11 @@
+{
+  "max_restaurants": 5000,
+  "max_menus_per_restaurant": 30,
+  "clean_restaurant_count": 4996,
+  "clean_menu_item_count": 137352,
+  "output_files": {
+    "restaurants_clean": "C:\\Users\\麦麦\\fitness-home\\backend\\data\\restaurants_clean.csv",
+    "menus_clean": "C:\\Users\\麦麦\\fitness-home\\backend\\data\\menus_clean.csv",
+    "database": "C:\\Users\\麦麦\\fitness-home\\backend\\data\\fitness_home_rag_v1.db"
+  }
+}
