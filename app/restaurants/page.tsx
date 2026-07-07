@@ -16,6 +16,23 @@ import {
 import type { UserProfile } from "@/app/types/profile";
 import type { Restaurant } from "@/app/types/restaurant";
 
+type AiRetrievedResult = {
+  rank: number;
+  restaurant_name: string;
+  category: string;
+  similarity_score: number;
+  average_calories: string;
+  average_protein: string;
+  average_fiber: string;
+};
+
+type AiRecommendationResult = {
+  query: string;
+  retrieved_count: number;
+  retrieved_results: AiRetrievedResult[];
+  generated_answer: string;
+};
+
 export default function RestaurantsPage() {
   const [userProfile, setUserProfile] =
     useState<UserProfile>(defaultProfile);
@@ -25,6 +42,14 @@ export default function RestaurantsPage() {
 
   const [isLoadingPlaces, setIsLoadingPlaces] = useState(false);
   const [placesMessage, setPlacesMessage] = useState("");
+
+  const [aiQuery, setAiQuery] = useState(
+    "I want a high-protein Japanese meal under 600 calories."
+  );
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiResult, setAiResult] =
+    useState<AiRecommendationResult | null>(null);
 
   useEffect(() => {
     setUserProfile(getStoredProfile());
@@ -64,6 +89,37 @@ export default function RestaurantsPage() {
     setPlacesMessage("Sample restaurants restored.");
   }
 
+  async function handleAiRecommend() {
+    setIsAiLoading(true);
+    setAiError("");
+    setAiResult(null);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: aiQuery,
+          top_k: 5,
+        }),
+      });
+
+      if (!response.ok) {
+        setAiError("Failed to get AI recommendation.");
+        return;
+      }
+
+      const data = (await response.json()) as AiRecommendationResult;
+      setAiResult(data);
+    } catch {
+      setAiError("Backend is not running. Please start FastAPI first.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  }
+
   const sortedRestaurants = [...restaurantList].sort((a, b) => {
     return (
       calculateMatchScore(b, userProfile) -
@@ -82,6 +138,124 @@ export default function RestaurantsPage() {
           <p className="mt-2 text-sm text-gray-500">
             Ranked by your fitness goals, calories, protein, and meal preference.
           </p>
+
+          <div className="mt-5 rounded-3xl bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  AI Fitness Meal Recommendation
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  Ask the RAG + Llama backend for a personalized restaurant recommendation.
+                </p>
+              </div>
+
+              <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                RAG + Llama
+              </span>
+            </div>
+
+            <textarea
+              value={aiQuery}
+              onChange={(event) => setAiQuery(event.target.value)}
+              className="mt-4 h-28 w-full rounded-2xl border border-gray-200 p-4 text-sm outline-none focus:border-green-500"
+              placeholder="Example: I want a high-protein Japanese meal under 600 calories."
+            />
+
+            <button
+              type="button"
+              onClick={handleAiRecommend}
+              disabled={isAiLoading || aiQuery.trim().length === 0}
+              className="mt-4 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {isAiLoading ? "Generating..." : "Get AI Recommendation"}
+            </button>
+
+            {aiError && (
+              <p className="mt-3 text-sm font-medium text-red-600">
+                {aiError}
+              </p>
+            )}
+
+            {aiResult && (
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl bg-green-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-700">
+                    AI Recommendation
+                  </p>
+
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-green-950">
+                    {aiResult.generated_answer}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-gray-50 p-4">
+                  <p className="text-sm font-bold text-gray-900">
+                    Retrieved Evidence
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Query: {aiResult.query}
+                  </p>
+
+                  <div className="mt-3 space-y-3">
+                    {aiResult.retrieved_results.slice(0, 3).map((result) => (
+                      <div
+                        key={`${result.rank}-${result.restaurant_name}`}
+                        className="rounded-2xl bg-white p-3 text-sm shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-bold text-gray-900">
+                              #{result.rank} {result.restaurant_name}
+                            </p>
+
+                            <p className="mt-1 text-gray-500">
+                              {result.category}
+                            </p>
+                          </div>
+
+                          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                            {result.similarity_score.toFixed(3)}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                          <div className="rounded-xl bg-gray-50 p-2">
+                            <p className="text-xs text-gray-400">
+                              Calories
+                            </p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {result.average_calories}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl bg-gray-50 p-2">
+                            <p className="text-xs text-gray-400">
+                              Protein
+                            </p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {result.average_protein}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl bg-gray-50 p-2">
+                            <p className="text-xs text-gray-400">
+                              Fiber
+                            </p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {result.average_fiber}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
             <button
