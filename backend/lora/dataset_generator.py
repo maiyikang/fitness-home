@@ -5,231 +5,469 @@ import os
 import random
 import sqlite3
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+)
 
 from core.paths import DATA_DIR, DATABASE_FILE
 
 
+# ==========================================================
+# Configuration
+# ==========================================================
+
 MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 
 OUTPUT_FILE = DATA_DIR / "lora_training_data.jsonl"
+
 METADATA_FILE = DATA_DIR / "lora_training_metadata.json"
 
-DATASET_VERSION = "v4_constraint_aware_llama31"
+DATASET_VERSION = "v5_constraint_aware"
 
-MAX_MENU_CANDIDATES = int(os.getenv("MAX_MENU_CANDIDATES", "1"))
-MAX_SAMPLES = int(os.getenv("MAX_SAMPLES", "5"))
-QUERIES_PER_MENU = int(os.getenv("QUERIES_PER_MENU", "5"))
+MAX_MENU_CANDIDATES = int(
+    os.getenv(
+        "MAX_MENU_CANDIDATES",
+        "1",
+    )
+)
+
+MAX_SAMPLES = int(
+    os.getenv(
+        "MAX_SAMPLES",
+        "5",
+    )
+)
+
+QUERIES_PER_MENU = int(
+    os.getenv(
+        "QUERIES_PER_MENU",
+        "5",
+    )
+)
 
 MAX_NEW_TOKENS = 220
-TEMPERATURE = 0.35
-TOP_P = 0.9
-REQUEST_DELAY_SECONDS = 0.1
+
+TEMPERATURE = 0.30
+
+TOP_P = 0.90
+
+REQUEST_DELAY_SECONDS = 0.10
+
 RANDOM_SEED = 42
 
+
+# ==========================================================
+# Teacher Prompt
+# ==========================================================
 
 SYSTEM_PROMPT = """
 You are the Teacher Model for the Fitness Home recommendation system.
 
-The restaurant and menu item have already been selected by the retrieval system.
+The recommendation has already been selected by the retrieval system.
 
-You are not allowed to recommend another restaurant.
-You are not allowed to recommend another menu item.
-You are not allowed to change the selected restaurant.
-You are not allowed to change the selected menu item.
+Your responsibility is ONLY to explain the retrieved recommendation.
 
-Your only task is to explain the retrieved recommendation using the provided evidence.
+You do NOT have recommendation authority.
 
-The restaurant name, menu name, cuisine, calories, protein, fiber, health level, and tags are factual database evidence.
-Never modify factual evidence.
-Never invent nutrition values.
-Never infer ingredients.
-Never infer dietary labels.
-Never infer that a meal is vegetarian, healthy, balanced, or fitness-friendly unless the provided evidence explicitly supports it.
+You MUST NOT:
 
-You must respect the provided constraint analysis.
-Do not change the match status.
-Do not claim that a violated constraint is satisfied.
-If the constraint analysis says Partial Match, explain both strengths and limitations.
-If the constraint analysis says Weak Match, clearly explain the limitations.
-If the evidence is insufficient, state that the evidence is insufficient instead of guessing.
+- recommend another restaurant
+- recommend another menu
+- modify restaurant names
+- modify menu names
+- invent calories
+- invent protein
+- invent fiber
+- invent health labels
+- invent ingredients
+- infer nutrition facts
+- infer vegetarian labels
+- infer healthy labels
+- infer balanced labels
 
-Your explanation must be objective, concise, and evidence-based.
-Output only the explanation text.
-Do not use markdown.
+You MUST strictly follow the supplied constraint evaluation.
+
+If Overall Match is Partial Match,
+you must explain both strengths and weaknesses.
+
+If Overall Match is Weak Match,
+you must clearly explain the limitations.
+
+Never claim that a violated constraint
+has been satisfied.
+
+Use only the supplied database evidence.
+
+Produce a concise,
+objective,
+evidence-based explanation.
+
+Output explanation only.
 """.strip()
 
 
-GOAL_TEMPLATES: Dict[str, List[str]] = {
-    "fat_loss": [
-        "I want a lower-calorie {cuisine} meal that supports fat loss.",
-        "Recommend a {cuisine} meal for fat loss with reasonable calories.",
-        "I need a fitness-friendly {cuisine} meal that is not too heavy.",
-    ],
-    "muscle_gain": [
-        "I want a high-protein {cuisine} meal for muscle gain.",
-        "Recommend a {cuisine} meal that supports strength training.",
-        "I need a protein-focused {cuisine} meal after a workout.",
-    ],
-    "maintenance": [
-        "I want a {cuisine} meal for daily fitness maintenance.",
-        "Recommend a {cuisine} meal for regular fitness maintenance.",
-        "I need an everyday {cuisine} meal that supports my fitness routine.",
-    ],
-    "high_fiber": [
-        "I want a high-fiber {cuisine} meal for better nutrition.",
-        "Recommend a {cuisine} meal with good fiber content.",
-        "I need a {cuisine} meal that includes meaningful fiber.",
-    ],
-    "high_protein": [
-        "I want a high-protein {cuisine} meal under 600 calories.",
-        "Recommend a protein-rich {cuisine} meal.",
-        "I need a {cuisine} meal with strong protein content.",
-    ],
-    "healthy_eating": [
-        "I want a healthy {cuisine} meal recommendation.",
-        "Recommend a nutrition-conscious {cuisine} meal.",
-        "I need a nutritious {cuisine} meal option.",
-    ],
-    "post_workout": [
-        "I want a post-workout {cuisine} meal.",
-        "Recommend a {cuisine} meal after training.",
-        "I need a recovery-friendly {cuisine} meal.",
-    ],
-    "low_calorie": [
-        "I want a low-calorie {cuisine} meal.",
-        "Recommend a lighter {cuisine} meal option.",
-        "I need a {cuisine} meal that is not too high in calories.",
-    ],
-}
+# ==========================================================
+# Data Classes
+# ==========================================================
 
 
-def normalize_text(value: Optional[Any]) -> str:
+@dataclass
+class ConstraintAnalysis:
+
+    overall_match: str
+
+    satisfied: List[str]
+
+    partial: List[str]
+
+    violated: List[str]
+
+    limitations: List[str]
+
+
+# ==========================================================
+# Utilities
+# ==========================================================
+
+
+def normalize_text(
+    value: Optional[Any],
+) -> str:
+
     if value is None:
+
         return ""
+
     return str(value).strip()
 
 
-def normalize_number(value: Optional[Any], default: float = 0.0) -> float:
+def normalize_number(
+    value: Optional[Any],
+    default: float = 0.0,
+) -> float:
+
     if value is None:
+
         return default
 
     try:
+
         return float(value)
-    except (TypeError, ValueError):
+
+    except Exception:
+
         return default
 
 
-def clean_cuisine(category: str) -> str:
+def clean_cuisine(
+    category: str,
+) -> str:
+
     category = normalize_text(category)
 
     if category == "":
+
         return "restaurant"
 
-    parts = [
+    values = [
+
         item.strip()
+
         for item in category.split(",")
+
         if item.strip()
+
     ]
 
-    if len(parts) == 0:
+    if len(values) == 0:
+
         return "restaurant"
 
-    return parts[0]
+    return values[0]
+
+
+# ==========================================================
+# Database
+# ==========================================================
 
 
 def get_connection() -> sqlite3.Connection:
-    connection = sqlite3.connect(DATABASE_FILE)
+
+    connection = sqlite3.connect(
+        DATABASE_FILE,
+    )
+
     connection.row_factory = sqlite3.Row
+
     return connection
 
 
 def load_candidates() -> List[Dict[str, Any]]:
+
     connection = get_connection()
+
     cursor = connection.cursor()
 
     query = """
-        SELECT
-            restaurants.id AS restaurant_id,
-            restaurants.name AS restaurant_name,
-            restaurants.category AS restaurant_category,
-            restaurants.health_score AS restaurant_health_score,
-            restaurants.fitness_score AS restaurant_fitness_score,
+    SELECT
 
-            menu_items.id AS menu_id,
-            menu_items.name AS menu_name,
-            menu_items.category AS menu_category,
-            menu_items.estimated_calories AS estimated_calories,
-            menu_items.estimated_protein AS estimated_protein,
-            menu_items.estimated_fiber AS estimated_fiber,
-            menu_items.health_level AS health_level,
-            menu_items.tags AS tags
+        restaurants.id AS restaurant_id,
 
-        FROM menu_items
+        restaurants.name AS restaurant_name,
 
-        JOIN restaurants
-            ON menu_items.restaurant_id = restaurants.id
+        restaurants.category AS restaurant_category,
 
-        WHERE
-            restaurants.name IS NOT NULL
-            AND menu_items.name IS NOT NULL
-            AND menu_items.estimated_calories IS NOT NULL
-            AND menu_items.estimated_protein IS NOT NULL
-            AND menu_items.estimated_fiber IS NOT NULL
-            AND menu_items.estimated_calories > 0
-            AND menu_items.estimated_calories <= 900
-            AND menu_items.estimated_protein >= 8
+        restaurants.health_score,
 
-        ORDER BY RANDOM()
+        restaurants.fitness_score,
 
-        LIMIT ?
+        menu_items.id AS menu_id,
+
+        menu_items.name AS menu_name,
+
+        menu_items.category AS menu_category,
+
+        menu_items.estimated_calories,
+
+        menu_items.estimated_protein,
+
+        menu_items.estimated_fiber,
+
+        menu_items.health_level,
+
+        menu_items.tags
+
+    FROM menu_items
+
+    JOIN restaurants
+
+        ON restaurants.id = menu_items.restaurant_id
+
+    WHERE
+
+        menu_items.name IS NOT NULL
+
+        AND restaurants.name IS NOT NULL
+
+        AND menu_items.estimated_calories IS NOT NULL
+
+        AND menu_items.estimated_protein IS NOT NULL
+
+        AND menu_items.estimated_fiber IS NOT NULL
+
+    ORDER BY RANDOM()
+
+    LIMIT ?
     """
 
-    cursor.execute(query, (MAX_MENU_CANDIDATES,))
+    cursor.execute(
+        query,
+        (
+            MAX_MENU_CANDIDATES,
+        ),
+    )
+
     rows = cursor.fetchall()
+
     connection.close()
 
-    return [dict(row) for row in rows]
+    return [
+
+        dict(row)
+
+        for row in rows
+
+    ]
+    # ==========================================================
+# Goal Templates
+# ==========================================================
 
 
-def infer_goals(item: Dict[str, Any]) -> List[str]:
-    calories = normalize_number(item.get("estimated_calories"))
-    protein = normalize_number(item.get("estimated_protein"))
-    fiber = normalize_number(item.get("estimated_fiber"))
-    health_level = normalize_text(item.get("health_level")).lower()
-    tags = normalize_text(item.get("tags")).lower()
+GOAL_TEMPLATES: Dict[str, List[str]] = {
+
+    "fat_loss": [
+
+        "I want a lower-calorie {cuisine} meal that supports fat loss.",
+
+        "Recommend a {cuisine} meal for fat loss with reasonable calories.",
+
+        "I need a fitness-friendly {cuisine} meal that is not too heavy.",
+
+    ],
+
+    "muscle_gain": [
+
+        "I want a high-protein {cuisine} meal for muscle gain.",
+
+        "Recommend a {cuisine} meal that supports strength training.",
+
+        "I need a protein-focused {cuisine} meal after a workout.",
+
+    ],
+
+    "maintenance": [
+
+        "I want a {cuisine} meal for daily fitness maintenance.",
+
+        "Recommend a {cuisine} meal for regular fitness maintenance.",
+
+        "I need an everyday {cuisine} meal that supports my fitness routine.",
+
+    ],
+
+    "high_fiber": [
+
+        "I want a high-fiber {cuisine} meal for better nutrition.",
+
+        "Recommend a {cuisine} meal with good fiber content.",
+
+        "I need a {cuisine} meal that includes meaningful fiber.",
+
+    ],
+
+    "high_protein": [
+
+        "I want a high-protein {cuisine} meal under 600 calories.",
+
+        "Recommend a protein-rich {cuisine} meal.",
+
+        "I need a {cuisine} meal with strong protein content.",
+
+    ],
+
+    "healthy_eating": [
+
+        "I want a healthy {cuisine} meal recommendation.",
+
+        "Recommend a nutrition-conscious {cuisine} meal.",
+
+        "I need a nutritious {cuisine} meal option.",
+
+    ],
+
+    "post_workout": [
+
+        "I want a post-workout {cuisine} meal.",
+
+        "Recommend a {cuisine} meal after training.",
+
+        "I need a recovery-friendly {cuisine} meal.",
+
+    ],
+
+    "low_calorie": [
+
+        "I want a low-calorie {cuisine} meal.",
+
+        "Recommend a lighter {cuisine} meal option.",
+
+        "I need a {cuisine} meal that is not too high in calories.",
+
+    ],
+
+}
+
+
+# ==========================================================
+# User Request Builder
+# ==========================================================
+
+
+def infer_goals(
+    item: Dict[str, Any],
+) -> List[str]:
+
+    calories = normalize_number(
+        item.get(
+            "estimated_calories",
+        ),
+    )
+
+    protein = normalize_number(
+        item.get(
+            "estimated_protein",
+        ),
+    )
+
+    fiber = normalize_number(
+        item.get(
+            "estimated_fiber",
+        ),
+    )
+
+    health_level = normalize_text(
+        item.get(
+            "health_level",
+        ),
+    ).lower()
+
+    tags = normalize_text(
+        item.get(
+            "tags",
+        ),
+    ).lower()
 
     goals: List[str] = []
 
     if protein >= 25:
-        goals.append("high_protein")
+
+        goals.append(
+            "high_protein",
+        )
 
     if protein >= 30:
-        goals.append("muscle_gain")
+
+        goals.append(
+            "muscle_gain",
+        )
 
     if calories <= 550:
-        goals.append("fat_loss")
-        goals.append("low_calorie")
+
+        goals.append(
+            "fat_loss",
+        )
+
+        goals.append(
+            "low_calorie",
+        )
 
     if fiber >= 6:
-        goals.append("high_fiber")
+
+        goals.append(
+            "high_fiber",
+        )
 
     if health_level == "healthy" or "healthy" in tags:
-        goals.append("healthy_eating")
+
+        goals.append(
+            "healthy_eating",
+        )
 
     if protein >= 20 and calories <= 700:
-        goals.append("post_workout")
 
-    goals.append("maintenance")
+        goals.append(
+            "post_workout",
+        )
+
+    goals.append(
+        "maintenance",
+    )
 
     unique_goals: List[str] = []
 
     for goal in goals:
+
         if goal not in unique_goals:
-            unique_goals.append(goal)
+
+            unique_goals.append(
+                goal,
+            )
 
     return unique_goals
 
@@ -239,10 +477,32 @@ def build_structured_input(
     goal: str,
     item: Dict[str, Any],
 ) -> str:
-    cuisine = clean_cuisine(normalize_text(item.get("restaurant_category")))
-    calories = normalize_number(item.get("estimated_calories"))
-    protein = normalize_number(item.get("estimated_protein"))
-    fiber = normalize_number(item.get("estimated_fiber"))
+
+    cuisine = clean_cuisine(
+        normalize_text(
+            item.get(
+                "restaurant_category",
+            ),
+        ),
+    )
+
+    calories = normalize_number(
+        item.get(
+            "estimated_calories",
+        ),
+    )
+
+    protein = normalize_number(
+        item.get(
+            "estimated_protein",
+        ),
+    )
+
+    fiber = normalize_number(
+        item.get(
+            "estimated_fiber",
+        ),
+    )
 
     return (
         f"Goal:\n"
@@ -260,17 +520,36 @@ def build_structured_input(
     )
 
 
-def build_user_requests(item: Dict[str, Any]) -> List[Dict[str, str]]:
-    cuisine = clean_cuisine(normalize_text(item.get("restaurant_category")))
-    goals = infer_goals(item)
+def build_user_requests(
+    item: Dict[str, Any],
+) -> List[Dict[str, str]]:
+
+    cuisine = clean_cuisine(
+        normalize_text(
+            item.get(
+                "restaurant_category",
+            ),
+        ),
+    )
+
+    goals = infer_goals(
+        item,
+    )
 
     requests: List[Dict[str, str]] = []
 
     for goal in goals:
-        templates = GOAL_TEMPLATES.get(goal, [])
+
+        templates = GOAL_TEMPLATES.get(
+            goal,
+            [],
+        )
 
         for template in templates:
-            user_request = template.format(cuisine=cuisine)
+
+            user_request = template.format(
+                cuisine=cuisine,
+            )
 
             requests.append(
                 {
@@ -282,182 +561,416 @@ def build_user_requests(item: Dict[str, Any]) -> List[Dict[str, str]]:
                         goal=goal,
                         item=item,
                     ),
-                }
+                },
             )
 
-    random.shuffle(requests)
+    random.shuffle(
+        requests,
+    )
 
-    return requests[:QUERIES_PER_MENU]
+    return requests[
+        :QUERIES_PER_MENU
+    ]
+
+
+# ==========================================================
+# Constraint Analysis
+# ==========================================================
+
+
+def contains_dessert_like_signal(
+    item: Dict[str, Any],
+) -> bool:
+
+    menu_name = normalize_text(
+        item.get(
+            "menu_name",
+        ),
+    ).lower()
+
+    menu_category = normalize_text(
+        item.get(
+            "menu_category",
+        ),
+    ).lower()
+
+    tags = normalize_text(
+        item.get(
+            "tags",
+        ),
+    ).lower()
+
+    keywords = [
+
+        "dessert",
+
+        "cake",
+
+        "cupcake",
+
+        "sundae",
+
+        "ice cream",
+
+        "milkshake",
+
+        "brownie",
+
+        "baklava",
+
+        "cookie",
+
+        "soda",
+
+        "sweet",
+
+        "cheesecake",
+
+        "shake",
+
+    ]
+
+    return any(
+        keyword in menu_name
+        or keyword in menu_category
+        or keyword in tags
+        for keyword in keywords
+    )
 
 
 def evaluate_constraints(
     item: Dict[str, Any],
     request_info: Dict[str, str],
-) -> Dict[str, Any]:
-    goal = request_info["goal"]
-    user_request = request_info["user_request"].lower()
+) -> ConstraintAnalysis:
 
-    calories = normalize_number(item.get("estimated_calories"))
-    protein = normalize_number(item.get("estimated_protein"))
-    fiber = normalize_number(item.get("estimated_fiber"))
-    health_level = normalize_text(item.get("health_level")).lower()
-    tags = normalize_text(item.get("tags")).lower()
+    goal = request_info[
+        "goal"
+    ]
+
+    user_request = request_info[
+        "user_request"
+    ].lower()
+
+    calories = normalize_number(
+        item.get(
+            "estimated_calories",
+        ),
+    )
+
+    protein = normalize_number(
+        item.get(
+            "estimated_protein",
+        ),
+    )
+
+    fiber = normalize_number(
+        item.get(
+            "estimated_fiber",
+        ),
+    )
+
+    health_level = normalize_text(
+        item.get(
+            "health_level",
+        ),
+    ).lower()
+
+    tags = normalize_text(
+        item.get(
+            "tags",
+        ),
+    ).lower()
 
     satisfied: List[str] = []
-    partially_satisfied: List[str] = []
+
+    partial: List[str] = []
+
     violated: List[str] = []
+
     limitations: List[str] = []
 
     if "under 600" in user_request:
+
         if calories <= 600:
-            satisfied.append("Calorie target under 600 kcal is satisfied.")
-        else:
-            violated.append(
-                f"Calorie target under 600 kcal is not satisfied because the menu has {calories:.0f} kcal."
+
+            satisfied.append(
+                "The requested calorie limit under 600 kcal is satisfied.",
             )
 
-    if goal in ["low_calorie", "fat_loss"]:
+        else:
+
+            violated.append(
+                f"The requested calorie limit under 600 kcal is not satisfied because the menu has {calories:.0f} kcal.",
+            )
+
+    if goal in [
+        "fat_loss",
+        "low_calorie",
+    ]:
+
         if calories <= 550:
-            satisfied.append("Lower-calorie preference is satisfied.")
-        elif calories <= 700:
-            partially_satisfied.append(
-                "Calorie level is moderate but not clearly low."
-            )
-        else:
-            violated.append(
-                "Lower-calorie preference is not satisfied because the calorie level is high."
+
+            satisfied.append(
+                "The lower-calorie preference is satisfied.",
             )
 
-    if goal in ["high_protein", "muscle_gain", "post_workout"]:
-        if protein >= 35:
-            satisfied.append("Strong protein requirement is satisfied.")
-        elif protein >= 25:
-            partially_satisfied.append(
-                "Protein content is meaningful but not very high."
+        elif calories <= 700:
+
+            partial.append(
+                "The calorie level is moderate, but it is not clearly low-calorie.",
             )
+
         else:
+
             violated.append(
-                "High-protein requirement is not fully satisfied."
+                "The lower-calorie preference is not satisfied because the calorie level is high.",
+            )
+
+    if goal in [
+        "high_protein",
+        "muscle_gain",
+        "post_workout",
+    ]:
+
+        if protein >= 35:
+
+            satisfied.append(
+                "The protein requirement is strongly satisfied.",
+            )
+
+        elif protein >= 25:
+
+            partial.append(
+                "The protein content is meaningful, but it is not very high.",
+            )
+
+        else:
+
+            violated.append(
+                "The high-protein requirement is not fully satisfied.",
             )
 
     if goal == "high_fiber":
+
         if fiber >= 8:
-            satisfied.append("High-fiber requirement is satisfied.")
-        elif fiber >= 5:
-            partially_satisfied.append(
-                "Fiber content is moderate but not clearly high."
+
+            satisfied.append(
+                "The high-fiber requirement is satisfied.",
             )
+
+        elif fiber >= 5:
+
+            partial.append(
+                "The fiber content is moderate, but it is not clearly high-fiber.",
+            )
+
         else:
+
             violated.append(
-                "High-fiber requirement is not satisfied."
+                "The high-fiber requirement is not satisfied.",
             )
 
     if goal == "healthy_eating":
-        if health_level == "healthy" or "healthy" in tags or "fitness_friendly" in tags:
-            satisfied.append("Healthy eating evidence is supported by the provided health level or tags.")
+
+        if (
+            health_level == "healthy"
+            or "healthy" in tags
+            or "fitness_friendly" in tags
+        ):
+
+            satisfied.append(
+                "The healthy-eating request is supported by the provided health level or tags.",
+            )
+
         else:
-            partially_satisfied.append(
-                "The request asks for healthy eating, but the evidence does not explicitly label this menu as healthy."
+
+            partial.append(
+                "The request asks for healthy eating, but the evidence does not explicitly label this menu as healthy.",
             )
 
     if goal == "maintenance":
+
         if calories <= 700 and protein >= 15:
-            satisfied.append("Maintenance goal is reasonably supported by moderate calories and protein.")
-        else:
-            partially_satisfied.append(
-                "Maintenance goal is only partially supported by the available nutrition evidence."
+
+            satisfied.append(
+                "The maintenance goal is reasonably supported by moderate calories and protein.",
             )
 
-    dessert_keywords = [
-        "dessert",
-        "cake",
-        "cupcake",
-        "sundae",
-        "ice cream",
-        "milkshake",
-        "brownie",
-        "baklava",
-        "cookie",
-        "soda",
-        "sweet",
-    ]
+        else:
 
-    menu_name = normalize_text(item.get("menu_name")).lower()
-    menu_category = normalize_text(item.get("menu_category")).lower()
+            partial.append(
+                "The maintenance goal is only partially supported by the available nutrition evidence.",
+            )
 
-    if any(keyword in menu_name or keyword in menu_category for keyword in dessert_keywords):
+    if contains_dessert_like_signal(
+        item,
+    ):
+
         limitations.append(
-            "The menu appears to be dessert-like or sweet, so it should not be overstated as a healthy fitness meal unless the evidence strongly supports it."
+            "The menu appears to be dessert-like or sweet, so its fitness value should not be overstated unless the evidence strongly supports it.",
         )
 
-    if len(violated) == 0 and len(partially_satisfied) == 0:
+    if len(
+        violated,
+    ) == 0 and len(
+        partial,
+    ) == 0:
+
         overall_match = "Full Match"
-    elif len(satisfied) > 0 and len(violated) == 0:
+
+    elif len(
+        satisfied,
+    ) > 0:
+
         overall_match = "Partial Match"
-    elif len(satisfied) > 0:
-        overall_match = "Partial Match"
+
     else:
+
         overall_match = "Weak Match"
 
-    return {
-        "overall_match": overall_match,
-        "satisfied_constraints": satisfied,
-        "partially_satisfied_constraints": partially_satisfied,
-        "violated_constraints": violated,
-        "limitations": limitations,
-    }
+    return ConstraintAnalysis(
+        overall_match=overall_match,
+        satisfied=satisfied,
+        partial=partial,
+        violated=violated,
+        limitations=limitations,
+    )
 
 
-def format_constraint_analysis(analysis: Dict[str, Any]) -> str:
+def format_constraint_analysis(
+    analysis: ConstraintAnalysis,
+) -> str:
+
     lines: List[str] = []
 
-    lines.append("Overall Match:")
-    lines.append(str(analysis["overall_match"]))
-    lines.append("")
+    lines.append(
+        "Overall Match:",
+    )
 
-    lines.append("Satisfied Constraints:")
-    if len(analysis["satisfied_constraints"]) == 0:
-        lines.append("- None explicitly satisfied.")
+    lines.append(
+        analysis.overall_match,
+    )
+
+    lines.append(
+        "",
+    )
+
+    lines.append(
+        "Satisfied Constraints:",
+    )
+
+    if len(
+        analysis.satisfied,
+    ) == 0:
+
+        lines.append(
+            "- None explicitly satisfied.",
+        )
+
     else:
-        for item in analysis["satisfied_constraints"]:
-            lines.append(f"- {item}")
 
-    lines.append("")
-    lines.append("Partially Satisfied Constraints:")
-    if len(analysis["partially_satisfied_constraints"]) == 0:
-        lines.append("- None.")
+        for item in analysis.satisfied:
+
+            lines.append(
+                f"- {item}",
+            )
+
+    lines.append(
+        "",
+    )
+
+    lines.append(
+        "Partially Satisfied Constraints:",
+    )
+
+    if len(
+        analysis.partial,
+    ) == 0:
+
+        lines.append(
+            "- None.",
+        )
+
     else:
-        for item in analysis["partially_satisfied_constraints"]:
-            lines.append(f"- {item}")
 
-    lines.append("")
-    lines.append("Violated Constraints:")
-    if len(analysis["violated_constraints"]) == 0:
-        lines.append("- None.")
+        for item in analysis.partial:
+
+            lines.append(
+                f"- {item}",
+            )
+
+    lines.append(
+        "",
+    )
+
+    lines.append(
+        "Violated Constraints:",
+    )
+
+    if len(
+        analysis.violated,
+    ) == 0:
+
+        lines.append(
+            "- None.",
+        )
+
     else:
-        for item in analysis["violated_constraints"]:
-            lines.append(f"- {item}")
 
-    lines.append("")
-    lines.append("Limitations:")
-    if len(analysis["limitations"]) == 0:
-        lines.append("- None.")
+        for item in analysis.violated:
+
+            lines.append(
+                f"- {item}",
+            )
+
+    lines.append(
+        "",
+    )
+
+    lines.append(
+        "Limitations:",
+    )
+
+    if len(
+        analysis.limitations,
+    ) == 0:
+
+        lines.append(
+            "- None.",
+        )
+
     else:
-        for item in analysis["limitations"]:
-            lines.append(f"- {item}")
 
-    return "\n".join(lines)
+        for item in analysis.limitations:
+
+            lines.append(
+                f"- {item}",
+            )
+
+    return "\n".join(
+        lines,
+    )
+    # ==========================================================
+# Teacher Loader
+# ==========================================================
 
 
-def load_teacher() -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
+def load_teacher() -> Tuple[
+    AutoTokenizer,
+    AutoModelForCausalLM,
+]:
+
     print("=" * 60)
     print("Loading Llama 3.1 Teacher Model")
     print("=" * 60)
     print(f"Model: {MODEL_NAME}")
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(
+        MODEL_NAME,
+    )
 
     if tokenizer.pad_token is None:
+
         tokenizer.pad_token = tokenizer.eos_token
 
     tokenizer.padding_side = "left"
@@ -474,26 +987,75 @@ def load_teacher() -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
     print("=" * 60)
 
     return tokenizer, model
-    def build_teacher_prompt(
+
+
+# ==========================================================
+# Prompt Builder
+# ==========================================================
+
+
+def build_teacher_prompt(
     item: Dict[str, Any],
     structured_input: str,
-    constraint_analysis: Dict[str, Any],
+    analysis: ConstraintAnalysis,
 ) -> str:
 
-    restaurant_name = normalize_text(item.get("restaurant_name"))
-    restaurant_category = normalize_text(item.get("restaurant_category"))
-    menu_name = normalize_text(item.get("menu_name"))
-    menu_category = normalize_text(item.get("menu_category"))
+    restaurant_name = normalize_text(
+        item.get(
+            "restaurant_name",
+        ),
+    )
 
-    calories = normalize_number(item.get("estimated_calories"))
-    protein = normalize_number(item.get("estimated_protein"))
-    fiber = normalize_number(item.get("estimated_fiber"))
+    restaurant_category = normalize_text(
+        item.get(
+            "restaurant_category",
+        ),
+    )
 
-    health_level = normalize_text(item.get("health_level"))
-    tags = normalize_text(item.get("tags"))
+    menu_name = normalize_text(
+        item.get(
+            "menu_name",
+        ),
+    )
+
+    menu_category = normalize_text(
+        item.get(
+            "menu_category",
+        ),
+    )
+
+    calories = normalize_number(
+        item.get(
+            "estimated_calories",
+        ),
+    )
+
+    protein = normalize_number(
+        item.get(
+            "estimated_protein",
+        ),
+    )
+
+    fiber = normalize_number(
+        item.get(
+            "estimated_fiber",
+        ),
+    )
+
+    health_level = normalize_text(
+        item.get(
+            "health_level",
+        ),
+    )
+
+    tags = normalize_text(
+        item.get(
+            "tags",
+        ),
+    )
 
     constraint_report = format_constraint_analysis(
-        constraint_analysis
+        analysis,
     )
 
     return f"""
@@ -540,36 +1102,37 @@ Constraint Evaluation
 
 Teacher Task
 
-The recommendation has already been selected.
+Explain the retrieved recommendation.
 
-You MUST explain the retrieved recommendation.
+You MUST follow the supplied constraint evaluation.
 
-You MUST follow the provided constraint evaluation.
+You MUST NOT change the overall match.
 
-Never change the Overall Match.
+You MUST explain:
 
-Never claim a violated constraint is satisfied.
+1. Which constraints are satisfied.
 
-Never invent nutrition facts.
+2. Which constraints are only partially satisfied.
 
-Never infer ingredients.
+3. Which constraints are violated.
 
-Never infer health labels.
+4. Why the recommendation is still selected.
 
-Never infer vegetarian, balanced, healthy or fitness-friendly unless explicitly supported by the evidence.
+Never recommend another restaurant.
 
-If the recommendation is only a Partial Match,
-explain both its advantages and limitations.
+Never recommend another menu.
 
-If the recommendation is a Weak Match,
-clearly explain why.
+Never modify nutrition facts.
 
-Do not recommend another restaurant.
-
-Do not recommend another menu.
+Never infer information that is not explicitly supported.
 
 Output explanation only.
 """.strip()
+
+
+# ==========================================================
+# Teacher Generation
+# ==========================================================
 
 
 def generate_explanation(
@@ -604,8 +1167,13 @@ def generate_explanation(
     )
 
     inputs = {
-        key: value.to(model.device)
+
+        key: value.to(
+            model.device,
+        )
+
         for key, value in inputs.items()
+
     }
 
     with torch.no_grad():
@@ -642,6 +1210,11 @@ def generate_explanation(
     return explanation
 
 
+# ==========================================================
+# Dataset Builder
+# ==========================================================
+
+
 def build_output(
     item: Dict[str, Any],
     explanation: str,
@@ -676,13 +1249,16 @@ def build_output(
         f"{explanation}"
 
     )
+    # ==========================================================
+# Metadata
+# ==========================================================
 
 
 def build_metadata(
     item: Dict[str, Any],
     goal: str,
     constraint: str,
-    constraint_analysis: Dict[str, Any],
+    analysis: ConstraintAnalysis,
 ) -> Dict[str, Any]:
 
     return {
@@ -703,7 +1279,15 @@ def build_metadata(
 
         "constraint": constraint,
 
-        "overall_match": constraint_analysis["overall_match"],
+        "overall_match": analysis.overall_match,
+
+        "satisfied_constraints": analysis.satisfied,
+
+        "partial_constraints": analysis.partial,
+
+        "violated_constraints": analysis.violated,
+
+        "limitations": analysis.limitations,
 
         "teacher_model": MODEL_NAME,
 
@@ -730,11 +1314,13 @@ def build_metadata(
         ),
 
     }
-    def build_sample(
+
+
+def build_sample(
     item: Dict[str, Any],
     request_info: Dict[str, str],
     explanation: str,
-    constraint_analysis: Dict[str, Any],
+    analysis: ConstraintAnalysis,
 ) -> Dict[str, Any]:
 
     return {
@@ -756,9 +1342,14 @@ def build_metadata(
                 item=item,
                 goal=request_info["goal"],
                 constraint=request_info["constraint"],
-                constraint_analysis=constraint_analysis,
+                analysis=analysis,
             ),
     }
+
+
+# ==========================================================
+# Validation
+# ==========================================================
 
 
 def is_valid_sample(
@@ -766,17 +1357,17 @@ def is_valid_sample(
 ) -> bool:
 
     output = normalize_text(
-        sample.get("output")
+        sample["output"],
     )
 
-    metadata = sample.get("metadata", {})
+    metadata = sample["metadata"]
 
     restaurant = normalize_text(
-        metadata.get("restaurant")
+        metadata["restaurant"],
     )
 
     menu = normalize_text(
-        metadata.get("menu")
+        metadata["menu"],
     )
 
     if restaurant == "":
@@ -797,14 +1388,15 @@ def is_valid_sample(
     return True
 
 
+# ==========================================================
+# Metadata File
+# ==========================================================
+
+
 def save_generation_metadata(
-
     total_candidates: int,
-
     total_samples: int,
-
     failed_samples: int,
-
 ) -> None:
 
     metadata = {
@@ -835,14 +1427,19 @@ def save_generation_metadata(
         json.dump(
             metadata,
             file,
-            indent=4,
             ensure_ascii=False,
+            indent=4,
         )
+        # ==========================================================
+# Dataset Generator
+# ==========================================================
 
 
 def generate_dataset() -> None:
 
-    random.seed(RANDOM_SEED)
+    random.seed(
+        RANDOM_SEED,
+    )
 
     tokenizer, model = load_teacher()
 
@@ -856,9 +1453,11 @@ def generate_dataset() -> None:
     print("=" * 60)
     print("Fitness Home Dataset Generator")
     print("=" * 60)
-    print(f"Teacher Model : {MODEL_NAME}")
-    print(f"Candidates    : {len(candidates)}")
-    print(f"Max Samples   : {MAX_SAMPLES}")
+    print(f"Teacher Model       : {MODEL_NAME}")
+    print(f"Dataset Version     : {DATASET_VERSION}")
+    print(f"Menu Candidates     : {len(candidates)}")
+    print(f"Queries Per Menu    : {QUERIES_PER_MENU}")
+    print(f"Max Samples         : {MAX_SAMPLES}")
     print("=" * 60)
 
     generated_samples = 0
@@ -878,7 +1477,7 @@ def generate_dataset() -> None:
                 break
 
             request_infos = build_user_requests(
-                item
+                item,
             )
 
             for request_info in request_infos:
@@ -899,24 +1498,30 @@ def generate_dataset() -> None:
                 if unique_key in seen:
                     continue
 
-                seen.add(unique_key)
+                seen.add(
+                    unique_key,
+                )
 
-                constraint_analysis = evaluate_constraints(
+                analysis = evaluate_constraints(
                     item=item,
                     request_info=request_info,
                 )
 
                 print(
                     f"[{generated_samples + 1}/{MAX_SAMPLES}] "
-                    f"{item['restaurant_name']} -> "
-                    f"{item['menu_name']} | "
-                    f"{constraint_analysis['overall_match']}"
+                    f"{normalize_text(item['restaurant_name'])}"
+                    f" -> "
+                    f"{normalize_text(item['menu_name'])}"
+                    f" | "
+                    f"{analysis.overall_match}"
                 )
 
                 prompt = build_teacher_prompt(
                     item=item,
-                    structured_input=request_info["structured_input"],
-                    constraint_analysis=constraint_analysis,
+                    structured_input=request_info[
+                        "structured_input"
+                    ],
+                    analysis=analysis,
                 )
 
                 try:
@@ -931,10 +1536,12 @@ def generate_dataset() -> None:
                         item=item,
                         request_info=request_info,
                         explanation=explanation,
-                        constraint_analysis=constraint_analysis,
+                        analysis=analysis,
                     )
 
-                    if not is_valid_sample(sample):
+                    if not is_valid_sample(
+                        sample,
+                    ):
 
                         failed_samples += 1
 
@@ -955,7 +1562,7 @@ def generate_dataset() -> None:
                     if REQUEST_DELAY_SECONDS > 0:
 
                         time.sleep(
-                            REQUEST_DELAY_SECONDS
+                            REQUEST_DELAY_SECONDS,
                         )
 
                 except Exception as error:
@@ -963,19 +1570,27 @@ def generate_dataset() -> None:
                     failed_samples += 1
 
                     print(
-                        f"Generation failed: {error}"
+                        "=" * 60,
                     )
+
+                    print(
+                        "Generation Exception",
+                    )
+
+                    print(
+                        "=" * 60,
+                    )
+
+                    print(error)
+
+                    print("=" * 60)
 
                     continue
 
     save_generation_metadata(
-
         total_candidates=len(candidates),
-
         total_samples=generated_samples,
-
         failed_samples=failed_samples,
-
     )
 
     print()
@@ -995,6 +1610,11 @@ def generate_dataset() -> None:
     print(f"Metadata          : {METADATA_FILE}")
 
     print("=" * 60)
+
+
+# ==========================================================
+# Main
+# ==========================================================
 
 
 def main() -> None:
