@@ -18,36 +18,48 @@ MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 OUTPUT_FILE = DATA_DIR / "lora_training_data.jsonl"
 METADATA_FILE = DATA_DIR / "lora_training_metadata.json"
 
-DATASET_VERSION = "v3_llama31_transformers"
+DATASET_VERSION = "v4_constraint_aware_llama31"
 
 MAX_MENU_CANDIDATES = int(os.getenv("MAX_MENU_CANDIDATES", "1"))
 MAX_SAMPLES = int(os.getenv("MAX_SAMPLES", "5"))
 QUERIES_PER_MENU = int(os.getenv("QUERIES_PER_MENU", "5"))
 
-MAX_NEW_TOKENS = 180
-TEMPERATURE = 0.4
+MAX_NEW_TOKENS = 220
+TEMPERATURE = 0.35
 TOP_P = 0.9
 REQUEST_DELAY_SECONDS = 0.1
 RANDOM_SEED = 42
 
 
 SYSTEM_PROMPT = """
-You are a professional fitness nutrition recommendation assistant.
+You are the Teacher Model for the Fitness Home recommendation system.
 
-The restaurant and menu item have already been selected by a retrieval system.
+The restaurant and menu item have already been selected by the retrieval system.
 
-Your only task is to explain why the selected restaurant and menu match the user's fitness-oriented meal request.
+You are not allowed to recommend another restaurant.
+You are not allowed to recommend another menu item.
+You are not allowed to change the selected restaurant.
+You are not allowed to change the selected menu item.
 
-Rules:
-1. Never recommend another restaurant.
-2. Never replace the selected menu item.
-3. Never invent calories, protein, fiber, health level, or tags.
-4. Use only the provided evidence.
-5. Write a natural and concise explanation.
-6. Mention relevant nutrition facts.
-7. Mention why the recommendation fits the user's goal.
-8. Output only the explanation text.
-9. Do not use markdown.
+Your only task is to explain the retrieved recommendation using the provided evidence.
+
+The restaurant name, menu name, cuisine, calories, protein, fiber, health level, and tags are factual database evidence.
+Never modify factual evidence.
+Never invent nutrition values.
+Never infer ingredients.
+Never infer dietary labels.
+Never infer that a meal is vegetarian, healthy, balanced, or fitness-friendly unless the provided evidence explicitly supports it.
+
+You must respect the provided constraint analysis.
+Do not change the match status.
+Do not claim that a violated constraint is satisfied.
+If the constraint analysis says Partial Match, explain both strengths and limitations.
+If the constraint analysis says Weak Match, clearly explain the limitations.
+If the evidence is insufficient, state that the evidence is insufficient instead of guessing.
+
+Your explanation must be objective, concise, and evidence-based.
+Output only the explanation text.
+Do not use markdown.
 """.strip()
 
 
@@ -63,14 +75,14 @@ GOAL_TEMPLATES: Dict[str, List[str]] = {
         "I need a protein-focused {cuisine} meal after a workout.",
     ],
     "maintenance": [
-        "I want a balanced {cuisine} meal for daily fitness maintenance.",
-        "Recommend a {cuisine} meal with balanced nutrition.",
-        "I need a healthy everyday {cuisine} meal.",
+        "I want a {cuisine} meal for daily fitness maintenance.",
+        "Recommend a {cuisine} meal for regular fitness maintenance.",
+        "I need an everyday {cuisine} meal that supports my fitness routine.",
     ],
     "high_fiber": [
         "I want a high-fiber {cuisine} meal for better nutrition.",
         "Recommend a {cuisine} meal with good fiber content.",
-        "I need a healthy {cuisine} meal that includes fiber.",
+        "I need a {cuisine} meal that includes meaningful fiber.",
     ],
     "high_protein": [
         "I want a high-protein {cuisine} meal under 600 calories.",
@@ -79,7 +91,7 @@ GOAL_TEMPLATES: Dict[str, List[str]] = {
     ],
     "healthy_eating": [
         "I want a healthy {cuisine} meal recommendation.",
-        "Recommend a fitness-oriented {cuisine} meal.",
+        "Recommend a nutrition-conscious {cuisine} meal.",
         "I need a nutritious {cuisine} meal option.",
     ],
     "post_workout": [
@@ -278,6 +290,165 @@ def build_user_requests(item: Dict[str, Any]) -> List[Dict[str, str]]:
     return requests[:QUERIES_PER_MENU]
 
 
+def evaluate_constraints(
+    item: Dict[str, Any],
+    request_info: Dict[str, str],
+) -> Dict[str, Any]:
+    goal = request_info["goal"]
+    user_request = request_info["user_request"].lower()
+
+    calories = normalize_number(item.get("estimated_calories"))
+    protein = normalize_number(item.get("estimated_protein"))
+    fiber = normalize_number(item.get("estimated_fiber"))
+    health_level = normalize_text(item.get("health_level")).lower()
+    tags = normalize_text(item.get("tags")).lower()
+
+    satisfied: List[str] = []
+    partially_satisfied: List[str] = []
+    violated: List[str] = []
+    limitations: List[str] = []
+
+    if "under 600" in user_request:
+        if calories <= 600:
+            satisfied.append("Calorie target under 600 kcal is satisfied.")
+        else:
+            violated.append(
+                f"Calorie target under 600 kcal is not satisfied because the menu has {calories:.0f} kcal."
+            )
+
+    if goal in ["low_calorie", "fat_loss"]:
+        if calories <= 550:
+            satisfied.append("Lower-calorie preference is satisfied.")
+        elif calories <= 700:
+            partially_satisfied.append(
+                "Calorie level is moderate but not clearly low."
+            )
+        else:
+            violated.append(
+                "Lower-calorie preference is not satisfied because the calorie level is high."
+            )
+
+    if goal in ["high_protein", "muscle_gain", "post_workout"]:
+        if protein >= 35:
+            satisfied.append("Strong protein requirement is satisfied.")
+        elif protein >= 25:
+            partially_satisfied.append(
+                "Protein content is meaningful but not very high."
+            )
+        else:
+            violated.append(
+                "High-protein requirement is not fully satisfied."
+            )
+
+    if goal == "high_fiber":
+        if fiber >= 8:
+            satisfied.append("High-fiber requirement is satisfied.")
+        elif fiber >= 5:
+            partially_satisfied.append(
+                "Fiber content is moderate but not clearly high."
+            )
+        else:
+            violated.append(
+                "High-fiber requirement is not satisfied."
+            )
+
+    if goal == "healthy_eating":
+        if health_level == "healthy" or "healthy" in tags or "fitness_friendly" in tags:
+            satisfied.append("Healthy eating evidence is supported by the provided health level or tags.")
+        else:
+            partially_satisfied.append(
+                "The request asks for healthy eating, but the evidence does not explicitly label this menu as healthy."
+            )
+
+    if goal == "maintenance":
+        if calories <= 700 and protein >= 15:
+            satisfied.append("Maintenance goal is reasonably supported by moderate calories and protein.")
+        else:
+            partially_satisfied.append(
+                "Maintenance goal is only partially supported by the available nutrition evidence."
+            )
+
+    dessert_keywords = [
+        "dessert",
+        "cake",
+        "cupcake",
+        "sundae",
+        "ice cream",
+        "milkshake",
+        "brownie",
+        "baklava",
+        "cookie",
+        "soda",
+        "sweet",
+    ]
+
+    menu_name = normalize_text(item.get("menu_name")).lower()
+    menu_category = normalize_text(item.get("menu_category")).lower()
+
+    if any(keyword in menu_name or keyword in menu_category for keyword in dessert_keywords):
+        limitations.append(
+            "The menu appears to be dessert-like or sweet, so it should not be overstated as a healthy fitness meal unless the evidence strongly supports it."
+        )
+
+    if len(violated) == 0 and len(partially_satisfied) == 0:
+        overall_match = "Full Match"
+    elif len(satisfied) > 0 and len(violated) == 0:
+        overall_match = "Partial Match"
+    elif len(satisfied) > 0:
+        overall_match = "Partial Match"
+    else:
+        overall_match = "Weak Match"
+
+    return {
+        "overall_match": overall_match,
+        "satisfied_constraints": satisfied,
+        "partially_satisfied_constraints": partially_satisfied,
+        "violated_constraints": violated,
+        "limitations": limitations,
+    }
+
+
+def format_constraint_analysis(analysis: Dict[str, Any]) -> str:
+    lines: List[str] = []
+
+    lines.append("Overall Match:")
+    lines.append(str(analysis["overall_match"]))
+    lines.append("")
+
+    lines.append("Satisfied Constraints:")
+    if len(analysis["satisfied_constraints"]) == 0:
+        lines.append("- None explicitly satisfied.")
+    else:
+        for item in analysis["satisfied_constraints"]:
+            lines.append(f"- {item}")
+
+    lines.append("")
+    lines.append("Partially Satisfied Constraints:")
+    if len(analysis["partially_satisfied_constraints"]) == 0:
+        lines.append("- None.")
+    else:
+        for item in analysis["partially_satisfied_constraints"]:
+            lines.append(f"- {item}")
+
+    lines.append("")
+    lines.append("Violated Constraints:")
+    if len(analysis["violated_constraints"]) == 0:
+        lines.append("- None.")
+    else:
+        for item in analysis["violated_constraints"]:
+            lines.append(f"- {item}")
+
+    lines.append("")
+    lines.append("Limitations:")
+    if len(analysis["limitations"]) == 0:
+        lines.append("- None.")
+    else:
+        for item in analysis["limitations"]:
+            lines.append(f"- {item}")
+
+    return "\n".join(lines)
+
+
 def load_teacher() -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
     print("=" * 60)
     print("Loading Llama 3.1 Teacher Model")
@@ -303,44 +474,50 @@ def load_teacher() -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
     print("=" * 60)
 
     return tokenizer, model
-
-
-def build_teacher_prompt(
+    def build_teacher_prompt(
     item: Dict[str, Any],
     structured_input: str,
+    constraint_analysis: Dict[str, Any],
 ) -> str:
+
     restaurant_name = normalize_text(item.get("restaurant_name"))
     restaurant_category = normalize_text(item.get("restaurant_category"))
     menu_name = normalize_text(item.get("menu_name"))
     menu_category = normalize_text(item.get("menu_category"))
+
     calories = normalize_number(item.get("estimated_calories"))
     protein = normalize_number(item.get("estimated_protein"))
     fiber = normalize_number(item.get("estimated_fiber"))
+
     health_level = normalize_text(item.get("health_level"))
     tags = normalize_text(item.get("tags"))
 
+    constraint_report = format_constraint_analysis(
+        constraint_analysis
+    )
+
     return f"""
-User Request and Constraints:
+User Request
 
 {structured_input}
 
-Selected Restaurant:
+Retrieved Restaurant
 
 {restaurant_name}
 
-Restaurant Category:
+Restaurant Category
 
 {restaurant_category}
 
-Selected Menu:
+Retrieved Menu
 
 {menu_name}
 
-Menu Category:
+Menu Category
 
 {menu_category}
 
-Nutrition Evidence:
+Nutrition Evidence
 
 Calories:
 {calories:.0f} kcal
@@ -357,18 +534,41 @@ Health Level:
 Tags:
 {tags}
 
-Task:
+Constraint Evaluation
 
-Generate a natural explanation for why the selected restaurant and menu match the user's request.
+{constraint_report}
 
-Remember:
+Teacher Task
 
 The recommendation has already been selected.
+
+You MUST explain the retrieved recommendation.
+
+You MUST follow the provided constraint evaluation.
+
+Never change the Overall Match.
+
+Never claim a violated constraint is satisfied.
+
+Never invent nutrition facts.
+
+Never infer ingredients.
+
+Never infer health labels.
+
+Never infer vegetarian, balanced, healthy or fitness-friendly unless explicitly supported by the evidence.
+
+If the recommendation is only a Partial Match,
+explain both its advantages and limitations.
+
+If the recommendation is a Weak Match,
+clearly explain why.
+
 Do not recommend another restaurant.
-Do not modify the restaurant name.
-Do not modify the menu name.
-Do not invent nutrition values.
-Only generate the explanation.
+
+Do not recommend another menu.
+
+Output explanation only.
 """.strip()
 
 
@@ -377,15 +577,19 @@ def generate_explanation(
     model: AutoModelForCausalLM,
     prompt: str,
 ) -> str:
+
     messages = [
+
         {
             "role": "system",
             "content": SYSTEM_PROMPT,
         },
+
         {
             "role": "user",
             "content": prompt,
         },
+
     ]
 
     formatted_prompt = tokenizer.apply_chat_template(
@@ -405,20 +609,33 @@ def generate_explanation(
     }
 
     with torch.no_grad():
-        output_ids = model.generate(
+
+        outputs = model.generate(
+
             **inputs,
+
             max_new_tokens=MAX_NEW_TOKENS,
+
             temperature=TEMPERATURE,
+
             top_p=TOP_P,
+
             do_sample=True,
+
+            repetition_penalty=1.10,
+
             pad_token_id=tokenizer.eos_token_id,
+
             eos_token_id=tokenizer.eos_token_id,
+
         )
 
-    generated_ids = output_ids[0][inputs["input_ids"].shape[-1]:]
+    generated = outputs[0][
+        inputs["input_ids"].shape[-1]:
+    ]
 
     explanation = tokenizer.decode(
-        generated_ids,
+        generated,
         skip_special_tokens=True,
     ).strip()
 
@@ -429,26 +646,35 @@ def build_output(
     item: Dict[str, Any],
     explanation: str,
 ) -> str:
-    restaurant_name = normalize_text(item.get("restaurant_name"))
-    menu_name = normalize_text(item.get("menu_name"))
-    calories = normalize_number(item.get("estimated_calories"))
-    protein = normalize_number(item.get("estimated_protein"))
-    fiber = normalize_number(item.get("estimated_fiber"))
 
     return (
+
         f"Recommended Restaurant:\n"
-        f"{restaurant_name}\n\n"
+
+        f"{normalize_text(item['restaurant_name'])}\n\n"
+
         f"Recommended Menu:\n"
-        f"{menu_name}\n\n"
+
+        f"{normalize_text(item['menu_name'])}\n\n"
+
         f"Nutrition Summary:\n"
+
         f"Calories:\n"
-        f"{calories:.0f} kcal\n\n"
+
+        f"{normalize_number(item['estimated_calories']):.0f} kcal\n\n"
+
         f"Protein:\n"
-        f"{protein:.0f} g\n\n"
+
+        f"{normalize_number(item['estimated_protein']):.0f} g\n\n"
+
         f"Fiber:\n"
-        f"{fiber:.0f} g\n\n"
+
+        f"{normalize_number(item['estimated_fiber']):.0f} g\n\n"
+
         f"Recommended Reason:\n"
+
         f"{explanation}"
+
     )
 
 
@@ -456,53 +682,102 @@ def build_metadata(
     item: Dict[str, Any],
     goal: str,
     constraint: str,
+    constraint_analysis: Dict[str, Any],
 ) -> Dict[str, Any]:
+
     return {
-        "restaurant_id": item.get("restaurant_id"),
-        "restaurant": normalize_text(item.get("restaurant_name")),
-        "restaurant_category": normalize_text(item.get("restaurant_category")),
-        "menu_id": item.get("menu_id"),
-        "menu": normalize_text(item.get("menu_name")),
-        "menu_category": normalize_text(item.get("menu_category")),
+
+        "restaurant_id": item["restaurant_id"],
+
+        "restaurant": item["restaurant_name"],
+
+        "restaurant_category": item["restaurant_category"],
+
+        "menu_id": item["menu_id"],
+
+        "menu": item["menu_name"],
+
+        "menu_category": item["menu_category"],
+
         "goal": goal,
+
         "constraint": constraint,
+
+        "overall_match": constraint_analysis["overall_match"],
+
         "teacher_model": MODEL_NAME,
+
         "dataset_version": DATASET_VERSION,
-        "estimated_calories": normalize_number(item.get("estimated_calories")),
-        "estimated_protein": normalize_number(item.get("estimated_protein")),
-        "estimated_fiber": normalize_number(item.get("estimated_fiber")),
-        "health_level": normalize_text(item.get("health_level")),
-        "tags": normalize_text(item.get("tags")),
+
+        "estimated_calories": normalize_number(
+            item["estimated_calories"]
+        ),
+
+        "estimated_protein": normalize_number(
+            item["estimated_protein"]
+        ),
+
+        "estimated_fiber": normalize_number(
+            item["estimated_fiber"]
+        ),
+
+        "health_level": normalize_text(
+            item["health_level"]
+        ),
+
+        "tags": normalize_text(
+            item["tags"]
+        ),
+
     }
-
-
-def build_sample(
+    def build_sample(
     item: Dict[str, Any],
     request_info: Dict[str, str],
     explanation: str,
+    constraint_analysis: Dict[str, Any],
 ) -> Dict[str, Any]:
+
     return {
-        "instruction": "Recommend a fitness meal based on the user's nutrition request.",
-        "input": request_info["structured_input"],
-        "output": build_output(
-            item=item,
-            explanation=explanation,
-        ),
-        "metadata": build_metadata(
-            item=item,
-            goal=request_info["goal"],
-            constraint=request_info["constraint"],
-        ),
+
+        "instruction":
+            "Recommend a fitness meal based on the user's nutrition request.",
+
+        "input":
+            request_info["structured_input"],
+
+        "output":
+            build_output(
+                item=item,
+                explanation=explanation,
+            ),
+
+        "metadata":
+            build_metadata(
+                item=item,
+                goal=request_info["goal"],
+                constraint=request_info["constraint"],
+                constraint_analysis=constraint_analysis,
+            ),
     }
 
 
-def is_valid_sample(sample: Dict[str, Any]) -> bool:
-    output = normalize_text(sample.get("output"))
+def is_valid_sample(
+    sample: Dict[str, Any],
+) -> bool:
+
+    output = normalize_text(
+        sample.get("output")
+    )
 
     metadata = sample.get("metadata", {})
 
-    restaurant = normalize_text(metadata.get("restaurant"))
-    menu = normalize_text(metadata.get("menu"))
+    restaurant = normalize_text(
+        metadata.get("restaurant")
+    )
+
+    menu = normalize_text(
+        metadata.get("menu")
+    )
 
     if restaurant == "":
         return False
@@ -523,90 +798,129 @@ def is_valid_sample(sample: Dict[str, Any]) -> bool:
 
 
 def save_generation_metadata(
+
     total_candidates: int,
+
     total_samples: int,
+
     failed_samples: int,
+
 ) -> None:
+
     metadata = {
+
         "dataset_version": DATASET_VERSION,
+
         "teacher_model": MODEL_NAME,
+
         "max_menu_candidates": MAX_MENU_CANDIDATES,
+
         "queries_per_menu": QUERIES_PER_MENU,
+
         "max_samples": MAX_SAMPLES,
+
         "total_candidates": total_candidates,
-        "total_samples": total_samples,
+
+        "generated_samples": total_samples,
+
         "failed_samples": failed_samples,
-        "output_file": str(OUTPUT_FILE),
+
     }
 
-    with METADATA_FILE.open("w", encoding="utf-8") as file:
+    with METADATA_FILE.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+
         json.dump(
             metadata,
             file,
+            indent=4,
             ensure_ascii=False,
-            indent=2,
         )
 
 
 def generate_dataset() -> None:
+
     random.seed(RANDOM_SEED)
 
     tokenizer, model = load_teacher()
 
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     candidates = load_candidates()
 
     print("=" * 60)
-    print("Fitness Home LoRA Dataset Generator")
+    print("Fitness Home Dataset Generator")
     print("=" * 60)
-    print(f"Teacher Model       : {MODEL_NAME}")
-    print(f"Dataset Version     : {DATASET_VERSION}")
-    print(f"Menu Candidates     : {len(candidates)}")
-    print(f"Queries Per Menu    : {QUERIES_PER_MENU}")
-    print(f"Max Samples         : {MAX_SAMPLES}")
-    print(f"Output File         : {OUTPUT_FILE}")
+    print(f"Teacher Model : {MODEL_NAME}")
+    print(f"Candidates    : {len(candidates)}")
+    print(f"Max Samples   : {MAX_SAMPLES}")
     print("=" * 60)
 
-    total_samples = 0
+    generated_samples = 0
+
     failed_samples = 0
-    seen_keys: Set[str] = set()
 
-    with OUTPUT_FILE.open("w", encoding="utf-8") as file:
+    seen: Set[str] = set()
+
+    with OUTPUT_FILE.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+
         for item in candidates:
-            if total_samples >= MAX_SAMPLES:
+
+            if generated_samples >= MAX_SAMPLES:
                 break
 
-            request_infos = build_user_requests(item)
+            request_infos = build_user_requests(
+                item
+            )
 
             for request_info in request_infos:
-                if total_samples >= MAX_SAMPLES:
+
+                if generated_samples >= MAX_SAMPLES:
                     break
 
                 unique_key = (
-                    f"{item.get('restaurant_id')}_"
-                    f"{item.get('menu_id')}_"
+
+                    f"{item['restaurant_id']}_"
+
+                    f"{item['menu_id']}_"
+
                     f"{request_info['structured_input']}"
+
                 )
 
-                if unique_key in seen_keys:
+                if unique_key in seen:
                     continue
 
-                seen_keys.add(unique_key)
+                seen.add(unique_key)
+
+                constraint_analysis = evaluate_constraints(
+                    item=item,
+                    request_info=request_info,
+                )
 
                 print(
-                    f"[{total_samples + 1}/{MAX_SAMPLES}] "
-                    f"{normalize_text(item.get('restaurant_name'))} -> "
-                    f"{normalize_text(item.get('menu_name'))} | "
-                    f"{request_info['goal']}"
+                    f"[{generated_samples + 1}/{MAX_SAMPLES}] "
+                    f"{item['restaurant_name']} -> "
+                    f"{item['menu_name']} | "
+                    f"{constraint_analysis['overall_match']}"
                 )
 
                 prompt = build_teacher_prompt(
                     item=item,
                     structured_input=request_info["structured_input"],
+                    constraint_analysis=constraint_analysis,
                 )
 
                 try:
+
                     explanation = generate_explanation(
                         tokenizer=tokenizer,
                         model=model,
@@ -617,45 +931,77 @@ def generate_dataset() -> None:
                         item=item,
                         request_info=request_info,
                         explanation=explanation,
+                        constraint_analysis=constraint_analysis,
                     )
 
                     if not is_valid_sample(sample):
+
                         failed_samples += 1
+
                         continue
 
-                    file.write(json.dumps(sample, ensure_ascii=False) + "\n")
+                    file.write(
+                        json.dumps(
+                            sample,
+                            ensure_ascii=False,
+                        )
+                        + "\n"
+                    )
+
                     file.flush()
 
-                    total_samples += 1
+                    generated_samples += 1
 
                     if REQUEST_DELAY_SECONDS > 0:
-                        time.sleep(REQUEST_DELAY_SECONDS)
+
+                        time.sleep(
+                            REQUEST_DELAY_SECONDS
+                        )
 
                 except Exception as error:
+
                     failed_samples += 1
-                    print(f"Generation failed: {error}")
+
+                    print(
+                        f"Generation failed: {error}"
+                    )
+
                     continue
 
     save_generation_metadata(
+
         total_candidates=len(candidates),
-        total_samples=total_samples,
+
+        total_samples=generated_samples,
+
         failed_samples=failed_samples,
+
     )
 
     print()
+
     print("=" * 60)
+
     print("Dataset Generation Completed")
+
     print("=" * 60)
-    print(f"Total Samples  : {total_samples}")
-    print(f"Failed Samples : {failed_samples}")
-    print(f"Output File    : {OUTPUT_FILE}")
-    print(f"Metadata File  : {METADATA_FILE}")
+
+    print(f"Generated Samples : {generated_samples}")
+
+    print(f"Failed Samples    : {failed_samples}")
+
+    print(f"Output            : {OUTPUT_FILE}")
+
+    print(f"Metadata          : {METADATA_FILE}")
+
     print("=" * 60)
 
 
 def main() -> None:
+
     generate_dataset()
 
 
 if __name__ == "__main__":
+
     main()
