@@ -1,0 +1,60 @@
+{
+  "dataset_version": "main20k_teacher_v4_raw30k",
+  "raw": 30000,
+  "accepted": 20415,
+  "rejected": 9585,
+  "accepted_rate": 0.6805,
+  "accepted_match": {
+    "partial": 6416,
+    "weak": 7208,
+    "full": 6791
+  },
+  "top_reject_reasons": [
+    [
+      "unsupported_goal_or_health_claim",
+      5756
+    ],
+    [
+      "missing_failed_constraint",
+      3383
+    ],
+    [
+      "numeric_relation_error",
+      1410
+    ],
+    [
+      "constraint_contradiction",
+      335
+    ],
+    [
+      "restaurant_not_mentioned",
+      238
+    ],
+    [
+      "prompt_leakage",
+      137
+    ],
+    [
+      "unsupported_menu_or_example",
+      95
+    ],
+    [
+      "unsupported_evidence",
+      49
+    ],
+    [
+      "unsupported_numbers",
+      29
+    ],
+    [
+      "overall_match_overclaim",
+      6
+    ],
+    [
+      "unsupported_unrequested_nutrient_judgement",
+      2
+    ]
+  ],
+  "unique_signatures": 625,
+  "unique_queries": 7500
+}

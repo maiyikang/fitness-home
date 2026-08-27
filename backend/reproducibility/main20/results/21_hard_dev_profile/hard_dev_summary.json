@@ -1,0 +1,93 @@
+{
+  "development_samples": 2069,
+  "challenge_samples": 1669,
+  "high_confidence_error_samples": 718,
+  "structural_anchor_only_samples": 951,
+  "high_confidence_error_type_counts": {
+    "evaluation_faithfulness_failure": 468,
+    "evaluation_hallucination": 468,
+    "strict_unsupported_numbers": 328,
+    "evaluation_numeric_failure": 253,
+    "evaluation_constraint_omission": 143,
+    "evaluation_restaurant_missing": 106,
+    "evaluation_failed_constraint_omission": 93,
+    "strict_constraint_contradiction": 89,
+    "evaluation_format_failure": 49,
+    "evaluation_prompt_leakage": 49,
+    "strict_numeric_relation_error": 8
+  },
+  "match_error_rates": {
+    "full": {
+      "samples": 647,
+      "high_confidence_error_samples": 183,
+      "error_rate": 0.2828438948995363
+    },
+    "partial": {
+      "samples": 732,
+      "high_confidence_error_samples": 301,
+      "error_rate": 0.41120218579234974
+    },
+    "weak": {
+      "samples": 690,
+      "high_confidence_error_samples": 234,
+      "error_rate": 0.3391304347826087
+    }
+  },
+  "top_structural_bins_by_error_rate": [
+    {
+      "bin": "weak|fail1|boundary|cuisine_mismatch",
+      "samples": 16,
+      "high_confidence_errors": 13,
+      "error_rate": 0.8125
+    },
+    {
+      "bin": "partial|fail2plus|boundary|cuisine_mismatch",
+      "samples": 81,
+      "high_confidence_errors": 61,
+      "error_rate": 0.7530864197530864
+    },
+    {
+      "bin": "partial|fail2plus|nonboundary|cuisine_mismatch",
+      "samples": 60,
+      "high_confidence_errors": 41,
+      "error_rate": 0.6833333333333333
+    },
+    {
+      "bin": "partial|fail2plus|boundary|cuisine_match",
+      "samples": 272,
+      "high_confidence_errors": 92,
+      "error_rate": 0.3382352941176471
+    },
+    {
+      "bin": "partial|fail2plus|nonboundary|cuisine_match",
+      "samples": 319,
+      "high_confidence_errors": 107,
+      "error_rate": 0.335423197492163
+    },
+    {
+      "bin": "weak|fail1|nonboundary|cuisine_match",
+      "samples": 216,
+      "high_confidence_errors": 72,
+      "error_rate": 0.3333333333333333
+    },
+    {
+      "bin": "weak|fail1|boundary|cuisine_match",
+      "samples": 452,
+      "high_confidence_errors": 144,
+      "error_rate": 0.3185840707964602
+    },
+    {
+      "bin": "full|fail0|nonboundary|cuisine_match",
+      "samples": 360,
+      "high_confidence_errors": 104,
+      "error_rate": 0.28888888888888886
+    },
+    {
+      "bin": "full|fail0|boundary|cuisine_match",
+      "samples": 287,
+      "high_confidence_errors": 79,
+      "error_rate": 0.27526132404181186
+    }
+  ],
+  "important_note": "This is a development-only challenge profile. It does not access the reserved final blind signatures."
+}

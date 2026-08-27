@@ -1,0 +1,100 @@
+{
+  "experiment": "ultra_low_budget_distribution_matched_random",
+  "development_only": true,
+  "blind_test_used": false,
+  "selection_seeds": [
+    20260813,
+    20260814,
+    20260815
+  ],
+  "budgets": {
+    "2p5pct": 400,
+    "1pct": 160
+  },
+  "source_match_distribution": {
+    "partial": 4967,
+    "weak": 5608,
+    "full": 5408
+  },
+  "definition": "Random subsets preserve sample count, Full/Weak/Partial distribution, and 1%-inside-2.5% nestedness. No signature-coverage rule is imposed.",
+  "subsets": {
+    "1pct_seed_20260813": {
+      "samples": 160,
+      "signatures": 134,
+      "queries": 159,
+      "restaurants": 84,
+      "match": {
+        "weak": 56,
+        "full": 54,
+        "partial": 50
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260813/train_random_1pct.jsonl",
+      "nested_1_in_2p5": true
+    },
+    "2p5pct_seed_20260813": {
+      "samples": 400,
+      "signatures": 277,
+      "queries": 393,
+      "restaurants": 136,
+      "match": {
+        "partial": 124,
+        "weak": 141,
+        "full": 135
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260813/train_random_2p5pct.jsonl",
+      "nested_1_in_2p5": true
+    },
+    "1pct_seed_20260814": {
+      "samples": 160,
+      "signatures": 134,
+      "queries": 157,
+      "restaurants": 91,
+      "match": {
+        "partial": 50,
+        "full": 54,
+        "weak": 56
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260814/train_random_1pct.jsonl",
+      "nested_1_in_2p5": true
+    },
+    "2p5pct_seed_20260814": {
+      "samples": 400,
+      "signatures": 279,
+      "queries": 388,
+      "restaurants": 150,
+      "match": {
+        "partial": 124,
+        "weak": 141,
+        "full": 135
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260814/train_random_2p5pct.jsonl",
+      "nested_1_in_2p5": true
+    },
+    "1pct_seed_20260815": {
+      "samples": 160,
+      "signatures": 138,
+      "queries": 159,
+      "restaurants": 82,
+      "match": {
+        "partial": 50,
+        "weak": 56,
+        "full": 54
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260815/train_random_1pct.jsonl",
+      "nested_1_in_2p5": true
+    },
+    "2p5pct_seed_20260815": {
+      "samples": 400,
+      "signatures": 283,
+      "queries": 398,
+      "restaurants": 141,
+      "match": {
+        "partial": 124,
+        "weak": 141,
+        "full": 135
+      },
+      "subset_file": "37_ultra_low_budget_random_multiseed/seed_20260815/train_random_2p5pct.jsonl",
+      "nested_1_in_2p5": true
+    }
+  }
+}

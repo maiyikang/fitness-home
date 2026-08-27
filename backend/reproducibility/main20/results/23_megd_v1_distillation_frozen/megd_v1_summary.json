@@ -1,0 +1,299 @@
+{
+  "method": "MEGD-v1",
+  "status": "development_method_selection_only_not_blind_test",
+  "definition": "Model-aware error-guided training-data distillation using within-match base-model teacher-forced-loss percentile plus empirical-Bayes-smoothed high-confidence Development Benchmark structural error prior, with representative signature anchors and frozen match-type quotas.",
+  "inputs": {
+    "train": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/04_main20k_split/train.jsonl",
+    "loss_profile": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/22_base_train_loss_profile_frozen/base_train_loss_profile.jsonl",
+    "structural_error_priors": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/21_hard_dev_profile/structural_error_priors.json",
+    "hard_development_profile": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/21_hard_dev_profile/hard_development_challenge.jsonl",
+    "train_sha256": "08fdf5a5197aed3aaa0ec11b988e545097a22789164fab1460ee184bc0953820",
+    "loss_profile_sha256": "c1d3c772bda932bee158888711dd09dd3709d976e0737b7c456d829139e9bb4a",
+    "structural_error_priors_sha256": "0a200713e0808c4fc5b71f3099321649b5c632354a60ce77a9e38e237c36154e",
+    "hard_development_profile_sha256": "9fd07675a060f9ee64ed2af7682f5d26bd8ee1c0c9214681daad9ad3d2538d41"
+  },
+  "parameters": {
+    "difficulty_weight": 0.65,
+    "error_prior_weight": 0.35,
+    "loss_percentile_scope": "within_match_type",
+    "loss_clip_percentile": 0.9,
+    "empirical_bayes_smoothing_strength": 50.0,
+    "global_dev_high_confidence_error_rate": 0.347027549540841,
+    "inferred_near_boundary_threshold": 0.10200000000000001,
+    "anchor_policy": "one median-MEG-score representative sample per constraint signature in 25pct",
+    "nested_policy": "25pct subset is a strict subset of 50pct",
+    "quota_25pct": {
+      "full": 1352,
+      "weak": 1402,
+      "partial": 1242
+    },
+    "quota_50pct": {
+      "full": 2704,
+      "weak": 2804,
+      "partial": 2484
+    }
+  },
+  "full_train": {
+    "samples": 15983,
+    "match_counts": {
+      "full": 5408,
+      "partial": 4967,
+      "weak": 5608
+    },
+    "unique_signatures": 500,
+    "unique_queries": 5876,
+    "unique_restaurants": 430,
+    "goal_counts": {
+      "fat loss": 4100,
+      "muscle gain": 3914,
+      "post-workout recovery": 3941,
+      "weight maintenance": 4028
+    },
+    "cuisine_counts": {
+      "American": 1238,
+      "Chinese": 1505,
+      "Greek": 1248,
+      "Indian": 1196,
+      "Italian": 1224,
+      "Japanese": 1261,
+      "Korean": 1423,
+      "Mediterranean": 1035,
+      "Mexican": 1451,
+      "Seafood": 1430,
+      "Thai": 1534,
+      "Vietnamese": 1438
+    },
+    "structural_bin_counts": {
+      "full|fail0|boundary|cuisine_match": 2874,
+      "full|fail0|nonboundary|cuisine_match": 2534,
+      "partial|fail2plus|boundary|cuisine_match": 2552,
+      "partial|fail2plus|boundary|cuisine_mismatch": 472,
+      "partial|fail2plus|nonboundary|cuisine_match": 1640,
+      "partial|fail2plus|nonboundary|cuisine_mismatch": 303,
+      "weak|fail1|boundary|cuisine_match": 3249,
+      "weak|fail1|boundary|cuisine_mismatch": 100,
+      "weak|fail1|nonboundary|cuisine_match": 2181,
+      "weak|fail1|nonboundary|cuisine_mismatch": 78
+    },
+    "meg_score": {
+      "min": 0.10046883721841465,
+      "p10": 0.18772725469428542,
+      "median": 0.47707140132097875,
+      "p90": 0.75359263930967,
+      "max": 0.8593357413508758,
+      "mean": 0.47336126992093325
+    },
+    "difficulty_score": {
+      "min": 0.0001981296560469171,
+      "p10": 0.1111782207010715,
+      "median": 0.5556674048721563,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 0.5500939111821194
+    },
+    "smoothed_error_prior": {
+      "min": 0.28590913197935325,
+      "p10": 0.28590913197935325,
+      "median": 0.32141708660765345,
+      "p90": 0.33960055117093807,
+      "max": 0.5981021181453592,
+      "mean": 0.3308577932930162
+    },
+    "base_teacher_forced_loss": {
+      "min": 0.6908503770828247,
+      "p10": 1.0160789489746094,
+      "median": 1.2552191019058228,
+      "p90": 1.5691566467285156,
+      "max": 2.520433187484741,
+      "mean": 1.2777687270187998
+    },
+    "max_samples_from_one_query": {
+      "query_id": "M20Q00005",
+      "count": 4,
+      "share": 0.00025026590752674717
+    },
+    "max_samples_from_one_restaurant": {
+      "restaurant_name": "Greek Gyros",
+      "count": 610,
+      "share": 0.03816555089782894
+    }
+  },
+  "meg_25pct": {
+    "samples": 3996,
+    "match_counts": {
+      "full": 1352,
+      "partial": 1242,
+      "weak": 1402
+    },
+    "unique_signatures": 500,
+    "unique_queries": 2946,
+    "unique_restaurants": 318,
+    "goal_counts": {
+      "fat loss": 1075,
+      "muscle gain": 1000,
+      "post-workout recovery": 960,
+      "weight maintenance": 961
+    },
+    "cuisine_counts": {
+      "American": 264,
+      "Chinese": 409,
+      "Greek": 366,
+      "Indian": 333,
+      "Italian": 347,
+      "Japanese": 380,
+      "Korean": 300,
+      "Mediterranean": 165,
+      "Mexican": 292,
+      "Seafood": 262,
+      "Thai": 345,
+      "Vietnamese": 533
+    },
+    "structural_bin_counts": {
+      "full|fail0|boundary|cuisine_match": 656,
+      "full|fail0|nonboundary|cuisine_match": 696,
+      "partial|fail2plus|boundary|cuisine_match": 656,
+      "partial|fail2plus|boundary|cuisine_mismatch": 144,
+      "partial|fail2plus|nonboundary|cuisine_match": 359,
+      "partial|fail2plus|nonboundary|cuisine_mismatch": 83,
+      "weak|fail1|boundary|cuisine_match": 873,
+      "weak|fail1|boundary|cuisine_mismatch": 25,
+      "weak|fail1|nonboundary|cuisine_match": 488,
+      "weak|fail1|nonboundary|cuisine_mismatch": 16
+    },
+    "meg_score": {
+      "min": 0.20243644011117332,
+      "p10": 0.5807556094139625,
+      "median": 0.747446832619499,
+      "p90": 0.7688601929098283,
+      "max": 0.8593357413508758,
+      "mean": 0.7080321551733705
+    },
+    "difficulty_score": {
+      "min": 0.08165000111849316,
+      "p10": 0.7180218735140276,
+      "median": 0.9723200903742477,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 0.9100793501595756
+    },
+    "smoothed_error_prior": {
+      "min": 0.28590913197935325,
+      "p10": 0.28590913197935325,
+      "median": 0.32141708660765345,
+      "p90": 0.33960055117093807,
+      "max": 0.5981021181453592,
+      "mean": 0.3328016501989896
+    },
+    "base_teacher_forced_loss": {
+      "min": 0.9985400438308716,
+      "p10": 1.3095736503601074,
+      "median": 1.5324367880821228,
+      "p90": 1.7826368808746338,
+      "max": 2.520433187484741,
+      "mean": 1.530050151102297
+    },
+    "max_samples_from_one_query": {
+      "query_id": "M20Q00087",
+      "count": 4,
+      "share": 0.001001001001001001
+    },
+    "max_samples_from_one_restaurant": {
+      "restaurant_name": "Greek Gyros",
+      "count": 189,
+      "share": 0.0472972972972973
+    }
+  },
+  "meg_50pct": {
+    "samples": 7992,
+    "match_counts": {
+      "full": 2704,
+      "partial": 2484,
+      "weak": 2804
+    },
+    "unique_signatures": 500,
+    "unique_queries": 4590,
+    "unique_restaurants": 379,
+    "goal_counts": {
+      "fat loss": 2093,
+      "muscle gain": 1962,
+      "post-workout recovery": 1956,
+      "weight maintenance": 1981
+    },
+    "cuisine_counts": {
+      "American": 535,
+      "Chinese": 811,
+      "Greek": 695,
+      "Indian": 640,
+      "Italian": 667,
+      "Japanese": 726,
+      "Korean": 652,
+      "Mediterranean": 398,
+      "Mexican": 620,
+      "Seafood": 560,
+      "Thai": 761,
+      "Vietnamese": 927
+    },
+    "structural_bin_counts": {
+      "full|fail0|boundary|cuisine_match": 1368,
+      "full|fail0|nonboundary|cuisine_match": 1336,
+      "partial|fail2plus|boundary|cuisine_match": 1305,
+      "partial|fail2plus|boundary|cuisine_mismatch": 252,
+      "partial|fail2plus|nonboundary|cuisine_match": 754,
+      "partial|fail2plus|nonboundary|cuisine_mismatch": 173,
+      "weak|fail1|boundary|cuisine_match": 1682,
+      "weak|fail1|boundary|cuisine_mismatch": 43,
+      "weak|fail1|nonboundary|cuisine_match": 1054,
+      "weak|fail1|nonboundary|cuisine_mismatch": 25
+    },
+    "meg_score": {
+      "min": 0.20243644011117332,
+      "p10": 0.5135819555489862,
+      "median": 0.6573369359919641,
+      "p90": 0.7673625305605453,
+      "max": 0.8593357413508758,
+      "mean": 0.6465884993715707
+    },
+    "difficulty_score": {
+      "min": 0.08165000111849316,
+      "p10": 0.6112299889047392,
+      "median": 0.8334172203207838,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 0.8161577387879709
+    },
+    "smoothed_error_prior": {
+      "min": 0.28590913197935325,
+      "p10": 0.28590913197935325,
+      "median": 0.32141708660765345,
+      "p90": 0.33960055117093807,
+      "max": 0.5981021181453592,
+      "mean": 0.33167419759825584
+    },
+    "base_teacher_forced_loss": {
+      "min": 0.9985400438308716,
+      "p10": 1.216403841972351,
+      "median": 1.4089128375053406,
+      "p90": 1.6777859926223755,
+      "max": 2.520433187484741,
+      "mean": 1.4341301507390178
+    },
+    "max_samples_from_one_query": {
+      "query_id": "M20Q00029",
+      "count": 4,
+      "share": 0.0005005005005005005
+    },
+    "max_samples_from_one_restaurant": {
+      "restaurant_name": "Greek Gyros",
+      "count": 343,
+      "share": 0.042917917917917915
+    }
+  },
+  "checks": {
+    "samples_25pct": 3996,
+    "samples_50pct": 7992,
+    "unique_signatures_25pct": 500,
+    "unique_signatures_50pct": 500,
+    "nested_25_in_50": true,
+    "blind_test_used": false
+  }
+}

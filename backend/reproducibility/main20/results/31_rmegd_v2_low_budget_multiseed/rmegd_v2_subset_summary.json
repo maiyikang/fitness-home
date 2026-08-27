@@ -1,0 +1,126 @@
+{
+  "experiment": "R-MEGD-v2 low-budget multi-seed",
+  "status": "Development benchmark method-selection only; final blind test not used",
+  "blind_test_used": false,
+  "seeds": [
+    20260813,
+    20260814,
+    20260815
+  ],
+  "budgets": {
+    "10pct": 1598,
+    "5pct": 799
+  },
+  "global_dev_high_confidence_error_rate": 0.347027549540841,
+  "boundary_threshold": 0.10200000000000001,
+  "method": {
+    "signature_anchor": "one representative near-median-loss anchor per constraint signature",
+    "additional_selection": "moderate-hard model difficulty + smoothed Development error prior + rarity utility",
+    "anti_collapse_controls": "fixed match quotas, signature caps, query caps, and source-proportional restaurant caps",
+    "nested": "5pct is a strict subset of 10pct"
+  },
+  "subsets": {
+    "5pct_seed_20260813": {
+      "samples": 799,
+      "signatures": 500,
+      "queries": 799,
+      "restaurants": 252,
+      "match": {
+        "partial": 248,
+        "weak": 280,
+        "full": 271
+      },
+      "mean_loss_percentile": 0.5833605528733734,
+      "mean_error_prior": 0.36533385705884036,
+      "mean_selection_score": 0.5605286570993419,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260813/train_rmegd_5pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260813/selection_manifest_5pct.jsonl",
+      "nested_5_in_10": true
+    },
+    "10pct_seed_20260813": {
+      "samples": 1598,
+      "signatures": 500,
+      "queries": 1493,
+      "restaurants": 296,
+      "match": {
+        "partial": 496,
+        "weak": 561,
+        "full": 541
+      },
+      "mean_loss_percentile": 0.6526696811466585,
+      "mean_error_prior": 0.3542394550524358,
+      "mean_selection_score": 0.605107599020619,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260813/train_rmegd_10pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260813/selection_manifest_10pct.jsonl",
+      "nested_5_in_10": true
+    },
+    "5pct_seed_20260814": {
+      "samples": 799,
+      "signatures": 500,
+      "queries": 799,
+      "restaurants": 246,
+      "match": {
+        "partial": 248,
+        "weak": 280,
+        "full": 271
+      },
+      "mean_loss_percentile": 0.5840374703799076,
+      "mean_error_prior": 0.3626240803496368,
+      "mean_selection_score": 0.5572882941032782,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260814/train_rmegd_5pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260814/selection_manifest_5pct.jsonl",
+      "nested_5_in_10": true
+    },
+    "10pct_seed_20260814": {
+      "samples": 1598,
+      "signatures": 500,
+      "queries": 1490,
+      "restaurants": 295,
+      "match": {
+        "partial": 496,
+        "weak": 561,
+        "full": 541
+      },
+      "mean_loss_percentile": 0.6514970034685773,
+      "mean_error_prior": 0.3537109897928076,
+      "mean_selection_score": 0.6043634154577958,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260814/train_rmegd_10pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260814/selection_manifest_10pct.jsonl",
+      "nested_5_in_10": true
+    },
+    "5pct_seed_20260815": {
+      "samples": 799,
+      "signatures": 500,
+      "queries": 799,
+      "restaurants": 244,
+      "match": {
+        "partial": 248,
+        "weak": 280,
+        "full": 271
+      },
+      "mean_loss_percentile": 0.5826821163658056,
+      "mean_error_prior": 0.36553874995233204,
+      "mean_selection_score": 0.5591982112612139,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260815/train_rmegd_5pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260815/selection_manifest_5pct.jsonl",
+      "nested_5_in_10": true
+    },
+    "10pct_seed_20260815": {
+      "samples": 1598,
+      "signatures": 500,
+      "queries": 1496,
+      "restaurants": 290,
+      "match": {
+        "weak": 561,
+        "partial": 496,
+        "full": 541
+      },
+      "mean_loss_percentile": 0.6519993259359781,
+      "mean_error_prior": 0.3542151586620278,
+      "mean_selection_score": 0.6045055479974474,
+      "subset_file": "31_rmegd_v2_low_budget_multiseed/seed_20260815/train_rmegd_10pct.jsonl",
+      "manifest_file": "31_rmegd_v2_low_budget_multiseed/seed_20260815/selection_manifest_10pct.jsonl",
+      "nested_5_in_10": true
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "method": "Matched Random Sampling Baseline",
+  "seed": 20260813,
+  "purpose": "Matched to B-CAEGD on sample count, all-500 signature coverage, Full/Weak/Partial quotas, and nested subset design; sample choice itself is random.",
+  "source_train_samples": 15983,
+  "source_match_distribution": {
+    "partial": 4967,
+    "weak": 5608,
+    "full": 5408
+  },
+  "25pct": {
+    "samples": 3996,
+    "signatures": 500,
+    "queries": 3112,
+    "restaurants": 323,
+    "match": {
+      "full": 1352,
+      "partial": 1242,
+      "weak": 1402
+    },
+    "file": "train_matched_random_25pct.jsonl"
+  },
+  "50pct": {
+    "samples": 7992,
+    "signatures": 500,
+    "queries": 4779,
+    "restaurants": 379,
+    "match": {
+      "full": 2704,
+      "partial": 2484,
+      "weak": 2804
+    },
+    "file": "train_matched_random_50pct.jsonl"
+  },
+  "nested_checks": {
+    "25_in_50": true
+  }
+}

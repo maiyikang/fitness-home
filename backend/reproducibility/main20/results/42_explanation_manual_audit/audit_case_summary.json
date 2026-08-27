@@ -1,0 +1,18 @@
+{
+  "seed": 20260818,
+  "case_count": 50,
+  "output_count": 250,
+  "methods_per_case": 5,
+  "groups": {
+    "full": 10,
+    "weak": 10,
+    "partial": 10,
+    "near_boundary": 10,
+    "cuisine_mismatch": 10
+  },
+  "method_labels_are_blinded": true,
+  "method_order_randomized_per_case": true,
+  "development_only": true,
+  "blind_test_used": false,
+  "important_note": "Subgroups can overlap in the full benchmark, but this audit assigns each selected case to exactly one group."
+}

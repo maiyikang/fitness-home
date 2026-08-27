@@ -1,0 +1,22 @@
+{
+  "main_dataset_target": "approximately_20k_qualified_samples",
+  "signature_count": 625,
+  "paraphrases_per_signature": 12,
+  "query_count": 7500,
+  "teacher_candidates_per_query": 4,
+  "teacher_raw_target": 30000,
+  "expected_qualified_at_teacher_v4_pilot_rate": 20340,
+  "teacher_v4_pilot_acceptance_rate": 0.678,
+  "relevant_in_top5_count": 3891,
+  "relevant_in_top5_rate": 0.5188,
+  "best_match_distribution": {
+    "weak": 2898,
+    "partial": 711,
+    "full": 3891
+  },
+  "unique_top1_restaurants": 191,
+  "most_common_top1": [
+    "Il Luigi Italian Cuisine",
+    624
+  ]
+}

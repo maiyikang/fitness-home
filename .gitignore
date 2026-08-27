@@ -47,3 +47,31 @@ next-env.d.ts
 /backend/data/models/
 /backend/__pycache__/
 /backend/**/__pycache__/
+
+
+# Fitness Home generated retrieval artifacts
+/backend/data/embeddings.npy
+/backend/data/faiss.index
+
+# Raw 35 GB experiment workspace; keep on RunPod only
+/backend/experiments/
+
+# Training and model artifacts
+**/checkpoints/
+**/final_adapter/
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.log
+
+# Notebook and Python caches
+**/.ipynb_checkpoints/
+**/__pycache__/
+*.pyc
+
+
+
+# Local Python virtual environments
+/.venv/
+

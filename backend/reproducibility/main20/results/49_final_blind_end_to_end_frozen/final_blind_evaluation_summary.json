@@ -1,0 +1,644 @@
+{
+  "experiment": "fitness_home_final_blind_end_to_end_v1",
+  "status": "final_blind_complete",
+  "one_time_final_blind_test": true,
+  "no_further_method_tuning": true,
+  "blind_test_used": true,
+  "blind_signature_count": 250,
+  "retrieval_query_count": 1000,
+  "explanation_sample_count": 250,
+  "retrieval": {
+    "B1_BM25": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.1312,
+      "mean_recall_at_5": 0.07507513820721472,
+      "mrr": 0.23456666666666667,
+      "mean_ndcg_at_5": 0.13990881569276964,
+      "hit_at_5_rate": 0.436,
+      "mean_relevant_count_at_5": 0.656,
+      "mean_top1_constraint_satisfaction": 0.5234166666666666,
+      "mean_best_at_5_constraint_satisfaction": 0.7985,
+      "full_match_at_1_rate": 0.135,
+      "full_match_at_5_rate": 0.436,
+      "unique_top1_restaurants": 72,
+      "most_common_top1": [
+        "4650",
+        215
+      ],
+      "largest_top1_share": 0.215,
+      "diversity_key": "restaurant_id"
+    },
+    "B2_BM25_ConstraintRerank": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.5528,
+      "mean_recall_at_5": 0.29843868653905253,
+      "mrr": 0.821,
+      "mean_ndcg_at_5": 0.6813726303144058,
+      "hit_at_5_rate": 0.821,
+      "mean_relevant_count_at_5": 2.764,
+      "mean_top1_constraint_satisfaction": 0.95,
+      "mean_best_at_5_constraint_satisfaction": 0.95,
+      "full_match_at_1_rate": 0.821,
+      "full_match_at_5_rate": 0.821,
+      "unique_top1_restaurants": 139,
+      "most_common_top1": [
+        "1990",
+        51
+      ],
+      "largest_top1_share": 0.051,
+      "diversity_key": "restaurant_id"
+    },
+    "B3_DenseBGE": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.25680000000000003,
+      "mean_recall_at_5": 0.08716380411139948,
+      "mrr": 0.35828333333333334,
+      "mean_ndcg_at_5": 0.2666800204919801,
+      "hit_at_5_rate": 0.503,
+      "mean_relevant_count_at_5": 1.284,
+      "mean_top1_constraint_satisfaction": 0.709,
+      "mean_best_at_5_constraint_satisfaction": 0.8395,
+      "full_match_at_1_rate": 0.277,
+      "full_match_at_5_rate": 0.503,
+      "unique_top1_restaurants": 111,
+      "most_common_top1": [
+        "4488",
+        80
+      ],
+      "largest_top1_share": 0.08,
+      "diversity_key": "restaurant_id"
+    },
+    "B4_DenseBGE_ConstraintRerank": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.5357999999999999,
+      "mean_recall_at_5": 0.20880722605549007,
+      "mrr": 0.722,
+      "mean_ndcg_at_5": 0.6051447466467611,
+      "hit_at_5_rate": 0.722,
+      "mean_relevant_count_at_5": 2.679,
+      "mean_top1_constraint_satisfaction": 0.9198333333333334,
+      "mean_best_at_5_constraint_satisfaction": 0.9198333333333334,
+      "full_match_at_1_rate": 0.722,
+      "full_match_at_5_rate": 0.722,
+      "unique_top1_restaurants": 146,
+      "most_common_top1": [
+        "2964",
+        74
+      ],
+      "largest_top1_share": 0.074,
+      "diversity_key": "restaurant_id"
+    },
+    "B6_HybridRRF_ConstraintRerank": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.5856,
+      "mean_recall_at_5": 0.29950409024335073,
+      "mrr": 0.844,
+      "mean_ndcg_at_5": 0.7073942441726117,
+      "hit_at_5_rate": 0.844,
+      "mean_relevant_count_at_5": 2.928,
+      "mean_top1_constraint_satisfaction": 0.95625,
+      "mean_best_at_5_constraint_satisfaction": 0.95625,
+      "full_match_at_1_rate": 0.844,
+      "full_match_at_5_rate": 0.844,
+      "unique_top1_restaurants": 162,
+      "most_common_top1": [
+        "1132",
+        57
+      ],
+      "largest_top1_share": 0.057,
+      "diversity_key": "restaurant_id"
+    },
+    "B5_StructuredConstraintOracle": {
+      "query_count": 1000,
+      "mean_precision_at_5": 0.8496,
+      "mean_recall_at_5": 0.5282775971870809,
+      "mrr": 1.0,
+      "mean_ndcg_at_5": 1.0,
+      "hit_at_5_rate": 1.0,
+      "mean_relevant_count_at_5": 4.248,
+      "mean_top1_constraint_satisfaction": 1.0,
+      "mean_best_at_5_constraint_satisfaction": 1.0,
+      "full_match_at_1_rate": 1.0,
+      "full_match_at_5_rate": 1.0,
+      "unique_top1_restaurants": 40,
+      "most_common_top1": [
+        "1132",
+        140
+      ],
+      "largest_top1_share": 0.14,
+      "diversity_key": "restaurant_id"
+    }
+  },
+  "explanation": {
+    "M1": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 1.0,
+      "constraint_state_accuracy": 1.0,
+      "constraint_state_macro_f1": 1.0,
+      "numeric_relation_accuracy": 1.0,
+      "failed_constraint_recall": 1.0,
+      "restaurant_mention_accuracy": 1.0,
+      "faithfulness_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 1.0,
+      "mean_constraint_state_coverage_rate": 1.0,
+      "mean_reference_token_f1": 1.0,
+      "mean_rouge_l_f1": 1.0,
+      "mean_word_count": 51.868,
+      "generation_seconds_estimate": 0.0,
+      "samples_per_second_estimate": null,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.816,
+      "end_to_end_full_and_faithful_rate": 0.816
+    },
+    "M2": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.0,
+      "constraint_state_accuracy": 0.6132478632478633,
+      "constraint_state_macro_f1": 0.385234899328859,
+      "numeric_relation_accuracy": 0.1661807580174927,
+      "failed_constraint_recall": 0.0,
+      "restaurant_mention_accuracy": 0.988,
+      "faithfulness_rate": 0.748,
+      "hallucination_rate": 0.252,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 0.948,
+      "strict_filter_pass_rate": 0.212,
+      "mean_constraint_state_coverage_rate": 0.9926666666666666,
+      "mean_reference_token_f1": 0.2998940223678801,
+      "mean_rouge_l_f1": 0.18877298677385276,
+      "mean_word_count": 85.068,
+      "generation_seconds_estimate": 123.84139,
+      "samples_per_second_estimate": 2.018711191791371,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.0,
+      "end_to_end_full_and_faithful_rate": 0.612
+    },
+    "M3": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.04,
+      "constraint_state_accuracy": 0.40705128205128205,
+      "constraint_state_macro_f1": 0.47377789644661017,
+      "numeric_relation_accuracy": 0.24198250728862974,
+      "failed_constraint_recall": 0.2826086956521739,
+      "restaurant_mention_accuracy": 0.968,
+      "faithfulness_rate": 0.812,
+      "hallucination_rate": 0.188,
+      "format_success_rate": 0.94,
+      "numeric_faithfulness_rate": 0.912,
+      "strict_filter_pass_rate": 0.2,
+      "mean_constraint_state_coverage_rate": 0.9826666666666666,
+      "mean_reference_token_f1": 0.4296225163844925,
+      "mean_rouge_l_f1": 0.28586769861327316,
+      "mean_word_count": 107.32,
+      "generation_seconds_estimate": 126.79245,
+      "samples_per_second_estimate": 1.9717262344879367,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.04,
+      "end_to_end_full_and_faithful_rate": 0.656
+    },
+    "M4": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.804,
+      "constraint_state_accuracy": 0.9423076923076923,
+      "constraint_state_macro_f1": 0.8622935163975836,
+      "numeric_relation_accuracy": 0.9358600583090378,
+      "failed_constraint_recall": 0.6739130434782609,
+      "restaurant_mention_accuracy": 1.0,
+      "faithfulness_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.992,
+      "mean_constraint_state_coverage_rate": 0.9936666666666666,
+      "mean_reference_token_f1": 0.6633892111281519,
+      "mean_rouge_l_f1": 0.5931264597907848,
+      "mean_word_count": 62.668,
+      "generation_seconds_estimate": 132.87391,
+      "samples_per_second_estimate": 1.8814829788631946,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.768,
+      "end_to_end_full_and_faithful_rate": 0.816
+    },
+    "M5": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.108,
+      "constraint_state_accuracy": 0.6004273504273504,
+      "constraint_state_macro_f1": 0.6821663609882404,
+      "numeric_relation_accuracy": 0.48542274052478135,
+      "failed_constraint_recall": 0.6086956521739131,
+      "restaurant_mention_accuracy": 0.984,
+      "faithfulness_rate": 0.836,
+      "hallucination_rate": 0.164,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.096,
+      "mean_constraint_state_coverage_rate": 0.985,
+      "mean_reference_token_f1": 0.4979603704546987,
+      "mean_rouge_l_f1": 0.35277423538509267,
+      "mean_word_count": 67.656,
+      "generation_seconds_estimate": 257.822766,
+      "samples_per_second_estimate": 0.969658358253747,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.076,
+      "end_to_end_full_and_faithful_rate": 0.664
+    },
+    "R10_20260813": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.8,
+      "constraint_state_accuracy": 0.9391025641025641,
+      "constraint_state_macro_f1": 0.8853530435808917,
+      "numeric_relation_accuracy": 0.934402332361516,
+      "failed_constraint_recall": 0.6739130434782609,
+      "restaurant_mention_accuracy": 0.996,
+      "faithfulness_rate": 0.996,
+      "hallucination_rate": 0.004,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.976,
+      "mean_constraint_state_coverage_rate": 0.9883333333333334,
+      "mean_reference_token_f1": 0.6648960683493798,
+      "mean_rouge_l_f1": 0.5990538152451057,
+      "mean_word_count": 64.512,
+      "generation_seconds_estimate": 135.189644,
+      "samples_per_second_estimate": 1.8492540745206787,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.776,
+      "end_to_end_full_and_faithful_rate": 0.812
+    },
+    "R10_20260814": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.796,
+      "constraint_state_accuracy": 0.936965811965812,
+      "constraint_state_macro_f1": 0.8823591794685332,
+      "numeric_relation_accuracy": 0.9635568513119533,
+      "failed_constraint_recall": 0.6521739130434783,
+      "restaurant_mention_accuracy": 1.0,
+      "faithfulness_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.96,
+      "mean_constraint_state_coverage_rate": 0.983,
+      "mean_reference_token_f1": 0.6726016526476901,
+      "mean_rouge_l_f1": 0.612823455302626,
+      "mean_word_count": 63.128,
+      "generation_seconds_estimate": 120.548604,
+      "samples_per_second_estimate": 2.073852302760802,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.752,
+      "end_to_end_full_and_faithful_rate": 0.816
+    },
+    "R10_20260815": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.816,
+      "constraint_state_accuracy": 0.936965811965812,
+      "constraint_state_macro_f1": 0.8665899942495687,
+      "numeric_relation_accuracy": 0.9533527696793003,
+      "failed_constraint_recall": 0.6086956521739131,
+      "restaurant_mention_accuracy": 1.0,
+      "faithfulness_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.98,
+      "mean_constraint_state_coverage_rate": 0.9873333333333334,
+      "mean_reference_token_f1": 0.6756426847955076,
+      "mean_rouge_l_f1": 0.6185531273307907,
+      "mean_word_count": 64.312,
+      "generation_seconds_estimate": 114.504908,
+      "samples_per_second_estimate": 2.1833125266560627,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.768,
+      "end_to_end_full_and_faithful_rate": 0.816
+    },
+    "R5_20260813": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.836,
+      "constraint_state_accuracy": 0.9551282051282052,
+      "constraint_state_macro_f1": 0.9017045288424992,
+      "numeric_relation_accuracy": 0.9591836734693877,
+      "failed_constraint_recall": 0.6956521739130435,
+      "restaurant_mention_accuracy": 0.992,
+      "faithfulness_rate": 0.988,
+      "hallucination_rate": 0.012,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 0.996,
+      "strict_filter_pass_rate": 0.976,
+      "mean_constraint_state_coverage_rate": 0.9923333333333334,
+      "mean_reference_token_f1": 0.6781797126210586,
+      "mean_rouge_l_f1": 0.6277226756165891,
+      "mean_word_count": 62.824,
+      "generation_seconds_estimate": 115.095072,
+      "samples_per_second_estimate": 2.1721173257530957,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.792,
+      "end_to_end_full_and_faithful_rate": 0.808
+    },
+    "R5_20260814": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.736,
+      "constraint_state_accuracy": 0.9273504273504274,
+      "constraint_state_macro_f1": 0.8613143067215858,
+      "numeric_relation_accuracy": 0.8892128279883382,
+      "failed_constraint_recall": 0.6304347826086957,
+      "restaurant_mention_accuracy": 0.996,
+      "faithfulness_rate": 0.996,
+      "hallucination_rate": 0.004,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.94,
+      "mean_constraint_state_coverage_rate": 0.986,
+      "mean_reference_token_f1": 0.6620655395567507,
+      "mean_rouge_l_f1": 0.6029934582800566,
+      "mean_word_count": 60.716,
+      "generation_seconds_estimate": 135.304694,
+      "samples_per_second_estimate": 1.847681648058714,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.708,
+      "end_to_end_full_and_faithful_rate": 0.812
+    },
+    "R5_20260815": {
+      "sample_count": 250,
+      "all_constraint_exact_accuracy": 0.792,
+      "constraint_state_accuracy": 0.9294871794871795,
+      "constraint_state_macro_f1": 0.9136916411343114,
+      "numeric_relation_accuracy": 0.9314868804664723,
+      "failed_constraint_recall": 0.8043478260869565,
+      "restaurant_mention_accuracy": 0.996,
+      "faithfulness_rate": 0.996,
+      "hallucination_rate": 0.004,
+      "format_success_rate": 1.0,
+      "numeric_faithfulness_rate": 1.0,
+      "strict_filter_pass_rate": 0.944,
+      "mean_constraint_state_coverage_rate": 0.9843333333333334,
+      "mean_reference_token_f1": 0.66315807046747,
+      "mean_rouge_l_f1": 0.5928676035738157,
+      "mean_word_count": 62.092,
+      "generation_seconds_estimate": 134.61181200000001,
+      "samples_per_second_estimate": 1.857192145961158,
+      "retrieval_full_at_1_rate": 0.816,
+      "end_to_end_exact_accuracy": 0.736,
+      "end_to_end_full_and_faithful_rate": 0.812
+    }
+  },
+  "reduced_data": {
+    "10% Random LoRA": {
+      "model_count": 3,
+      "methods": [
+        "R10_20260813",
+        "R10_20260814",
+        "R10_20260815"
+      ],
+      "metrics": {
+        "all_constraint_exact_accuracy": {
+          "mean": 0.8039999999999999,
+          "sample_sd": 0.01058300524425831,
+          "min": 0.796,
+          "max": 0.816,
+          "per_model": [
+            0.8,
+            0.796,
+            0.816
+          ]
+        },
+        "constraint_state_macro_f1": {
+          "mean": 0.8781007390996646,
+          "sample_sd": 0.0100803641220852,
+          "min": 0.8665899942495687,
+          "max": 0.8853530435808917,
+          "per_model": [
+            0.8853530435808917,
+            0.8823591794685332,
+            0.8665899942495687
+          ]
+        },
+        "numeric_relation_accuracy": {
+          "mean": 0.9504373177842566,
+          "sample_sd": 0.014794302573020718,
+          "min": 0.934402332361516,
+          "max": 0.9635568513119533,
+          "per_model": [
+            0.934402332361516,
+            0.9635568513119533,
+            0.9533527696793003
+          ]
+        },
+        "failed_constraint_recall": {
+          "mean": 0.6449275362318841,
+          "sample_sd": 0.03320707025330317,
+          "min": 0.6086956521739131,
+          "max": 0.6739130434782609,
+          "per_model": [
+            0.6739130434782609,
+            0.6521739130434783,
+            0.6086956521739131
+          ]
+        },
+        "faithfulness_rate": {
+          "mean": 0.9986666666666667,
+          "sample_sd": 0.002309401076758505,
+          "min": 0.996,
+          "max": 1.0,
+          "per_model": [
+            0.996,
+            1.0,
+            1.0
+          ]
+        },
+        "hallucination_rate": {
+          "mean": 0.0013333333333333333,
+          "sample_sd": 0.002309401076758503,
+          "min": 0.0,
+          "max": 0.004,
+          "per_model": [
+            0.004,
+            0.0,
+            0.0
+          ]
+        },
+        "mean_rouge_l_f1": {
+          "mean": 0.6101434659595074,
+          "sample_sd": 0.01002210307835422,
+          "min": 0.5990538152451057,
+          "max": 0.6185531273307907,
+          "per_model": [
+            0.5990538152451057,
+            0.612823455302626,
+            0.6185531273307907
+          ]
+        },
+        "end_to_end_exact_accuracy": {
+          "mean": 0.7653333333333334,
+          "sample_sd": 0.012220201853215585,
+          "min": 0.752,
+          "max": 0.776,
+          "per_model": [
+            0.776,
+            0.752,
+            0.768
+          ]
+        },
+        "end_to_end_full_and_faithful_rate": {
+          "mean": 0.8146666666666667,
+          "sample_sd": 0.002309401076758441,
+          "min": 0.812,
+          "max": 0.816,
+          "per_model": [
+            0.812,
+            0.816,
+            0.816
+          ]
+        }
+      }
+    },
+    "5% Random LoRA": {
+      "model_count": 3,
+      "methods": [
+        "R5_20260813",
+        "R5_20260814",
+        "R5_20260815"
+      ],
+      "metrics": {
+        "all_constraint_exact_accuracy": {
+          "mean": 0.7879999999999999,
+          "sample_sd": 0.050119856344566664,
+          "min": 0.736,
+          "max": 0.836,
+          "per_model": [
+            0.836,
+            0.736,
+            0.792
+          ]
+        },
+        "constraint_state_macro_f1": {
+          "mean": 0.892236825566132,
+          "sample_sd": 0.027442200058352125,
+          "min": 0.8613143067215858,
+          "max": 0.9136916411343114,
+          "per_model": [
+            0.9017045288424992,
+            0.8613143067215858,
+            0.9136916411343114
+          ]
+        },
+        "numeric_relation_accuracy": {
+          "mean": 0.9266277939747328,
+          "sample_sd": 0.035237591368932696,
+          "min": 0.8892128279883382,
+          "max": 0.9591836734693877,
+          "per_model": [
+            0.9591836734693877,
+            0.8892128279883382,
+            0.9314868804664723
+          ]
+        },
+        "failed_constraint_recall": {
+          "mean": 0.7101449275362319,
+          "sample_sd": 0.08785764965929088,
+          "min": 0.6304347826086957,
+          "max": 0.8043478260869565,
+          "per_model": [
+            0.6956521739130435,
+            0.6304347826086957,
+            0.8043478260869565
+          ]
+        },
+        "faithfulness_rate": {
+          "mean": 0.9933333333333333,
+          "sample_sd": 0.00461880215351701,
+          "min": 0.988,
+          "max": 0.996,
+          "per_model": [
+            0.988,
+            0.996,
+            0.996
+          ]
+        },
+        "hallucination_rate": {
+          "mean": 0.006666666666666667,
+          "sample_sd": 0.004618802153517006,
+          "min": 0.004,
+          "max": 0.012,
+          "per_model": [
+            0.012,
+            0.004,
+            0.004
+          ]
+        },
+        "mean_rouge_l_f1": {
+          "mean": 0.6078612458234871,
+          "sample_sd": 0.017930156955607335,
+          "min": 0.5928676035738157,
+          "max": 0.6277226756165891,
+          "per_model": [
+            0.6277226756165891,
+            0.6029934582800566,
+            0.5928676035738157
+          ]
+        },
+        "end_to_end_exact_accuracy": {
+          "mean": 0.7453333333333333,
+          "sample_sd": 0.04277070648625454,
+          "min": 0.708,
+          "max": 0.792,
+          "per_model": [
+            0.792,
+            0.708,
+            0.736
+          ]
+        },
+        "end_to_end_full_and_faithful_rate": {
+          "mean": 0.8106666666666668,
+          "sample_sd": 0.002309401076758505,
+          "min": 0.808,
+          "max": 0.812,
+          "per_model": [
+            0.808,
+            0.812,
+            0.812
+          ]
+        }
+      }
+    }
+  },
+  "significance": {
+    "M3_vs_M4": {
+      "all_constraint_exact": {
+        "first_only_success": 0,
+        "second_only_success": 191,
+        "discordant_pairs": 191,
+        "two_sided_exact_p": 6.372367644529809e-58
+      },
+      "faithfulness": {
+        "first_only_success": 0,
+        "second_only_success": 47,
+        "discordant_pairs": 47,
+        "two_sided_exact_p": 1.4210854715202004e-14
+      }
+    },
+    "M4_vs_M5": {
+      "all_constraint_exact": {
+        "first_only_success": 181,
+        "second_only_success": 7,
+        "discordant_pairs": 188,
+        "two_sided_exact_p": 7.796807359600509e-45
+      },
+      "faithfulness": {
+        "first_only_success": 41,
+        "second_only_success": 0,
+        "discordant_pairs": 41,
+        "two_sided_exact_p": 9.094947017729282e-13
+      }
+    }
+  },
+  "final_system": {
+    "retriever": "B6_HybridRRF_ConstraintRerank",
+    "explainer": "M4_Final_Hybrid_RAG_LoRA_TinyLlama_100pct",
+    "retrieval_full_at_1": 0.816,
+    "end_to_end_exact_accuracy": 0.768,
+    "end_to_end_full_and_faithful_rate": 0.816
+  }
+}

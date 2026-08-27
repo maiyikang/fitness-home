@@ -1,0 +1,232 @@
+{
+  "profile_version": "base_train_teacher_forced_loss_v1",
+  "samples": 15983,
+  "batch_size": 8,
+  "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "loss_distribution": {
+    "min": 0.6908503770828247,
+    "p10": 1.0160789489746094,
+    "p25": 1.1174152493476868,
+    "median": 1.2552191019058228,
+    "p75": 1.4089128375053406,
+    "p90": 1.5691520929336549,
+    "p95": 1.6777257084846493,
+    "max": 2.520433187484741,
+    "mean": 1.2777687270187998
+  },
+  "loss_by_match_type": {
+    "full": {
+      "min": 0.6908503770828247,
+      "p10": 0.9676957130432129,
+      "p25": 1.0470945239067078,
+      "median": 1.1559349298477173,
+      "p75": 1.286144733428955,
+      "p90": 1.416752851009369,
+      "p95": 1.5157690703868865,
+      "max": 2.2587502002716064,
+      "mean": 1.1783614252975
+    },
+    "partial": {
+      "min": 0.7594377994537354,
+      "p10": 1.0425851106643678,
+      "p25": 1.1396031975746155,
+      "median": 1.2603744268417358,
+      "p75": 1.3938913941383362,
+      "p90": 1.542561030387879,
+      "p95": 1.6341761231422423,
+      "max": 2.192927122116089,
+      "mean": 1.2786042327273173
+    },
+    "weak": {
+      "min": 0.7104420065879822,
+      "p10": 1.0889313459396361,
+      "p25": 1.2154166400432587,
+      "median": 1.3600153923034668,
+      "p75": 1.5077265799045563,
+      "p90": 1.6678142905235294,
+      "p95": 1.7790836274623871,
+      "max": 2.520433187484741,
+      "mean": 1.372890825958633
+    }
+  },
+  "loss_by_failed_constraint_count": {
+    "0": {
+      "min": 0.6908503770828247,
+      "p10": 0.9676957130432129,
+      "p25": 1.0470945239067078,
+      "median": 1.1559349298477173,
+      "p75": 1.286144733428955,
+      "p90": 1.416752851009369,
+      "p95": 1.5157690703868865,
+      "max": 2.2587502002716064,
+      "mean": 1.1783614252975
+    },
+    "1": {
+      "min": 0.7104420065879822,
+      "p10": 1.0889313459396361,
+      "p25": 1.2154166400432587,
+      "median": 1.3600153923034668,
+      "p75": 1.5077265799045563,
+      "p90": 1.6678142905235294,
+      "p95": 1.7790836274623871,
+      "max": 2.520433187484741,
+      "mean": 1.372890825958633
+    },
+    "2": {
+      "min": 0.7594377994537354,
+      "p10": 1.0548442363739015,
+      "p25": 1.1579724550247192,
+      "median": 1.280949354171753,
+      "p75": 1.4161005020141602,
+      "p90": 1.5625253438949587,
+      "p95": 1.6505757331848145,
+      "max": 2.192927122116089,
+      "mean": 1.2966335986611492
+    },
+    "3": {
+      "min": 0.8205021023750305,
+      "p10": 1.0213565945625307,
+      "p25": 1.0903080105781555,
+      "median": 1.1744723916053772,
+      "p75": 1.2945254445075989,
+      "p90": 1.4283157229423524,
+      "p95": 1.4924302577972413,
+      "max": 1.9105587005615234,
+      "mean": 1.2039160565483285
+    },
+    "4": {
+      "min": 0.897520124912262,
+      "p10": 0.9974260032176971,
+      "p25": 1.0662628412246704,
+      "median": 1.1669794917106628,
+      "p75": 1.2817734777927399,
+      "p90": 1.3722745537757874,
+      "p95": 1.4701355516910553,
+      "max": 1.5408401489257812,
+      "mean": 1.1857046753168106
+    }
+  },
+  "highest_loss_examples": [
+    {
+      "sample_id": "M20_M20Q04023_R02_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.520433187484741
+    },
+    {
+      "sample_id": "M20_M20Q00919_R03_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.459904432296753
+    },
+    {
+      "sample_id": "M20_M20Q03507_R02_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.413351058959961
+    },
+    {
+      "sample_id": "M20_M20Q05117_R03_S03",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.351853847503662
+    },
+    {
+      "sample_id": "M20_M20Q03727_R02_S03",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.298617124557495
+    },
+    {
+      "sample_id": "M20_M20Q03783_R03_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.2896180152893066
+    },
+    {
+      "sample_id": "M20_M20Q03543_R01_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.287074089050293
+    },
+    {
+      "sample_id": "M20_M20Q03191_R05_S03",
+      "match_type": "full",
+      "failed_constraint_count": 0,
+      "loss": 2.2587502002716064
+    },
+    {
+      "sample_id": "M20_M20Q07002_R04_S04",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.258140802383423
+    },
+    {
+      "sample_id": "M20_M20Q01033_R01_S01",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.2500510215759277
+    },
+    {
+      "sample_id": "M20_M20Q01416_R01_S01",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.217566967010498
+    },
+    {
+      "sample_id": "M20_M20Q03086_R05_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.2076821327209473
+    },
+    {
+      "sample_id": "M20_M20Q03917_R05_S03",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.199594259262085
+    },
+    {
+      "sample_id": "M20_M20Q03545_R05_S03",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.195300340652466
+    },
+    {
+      "sample_id": "M20_M20Q03068_R02_S04",
+      "match_type": "partial",
+      "failed_constraint_count": 2,
+      "loss": 2.192927122116089
+    },
+    {
+      "sample_id": "M20_M20Q01264_R01_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.1876964569091797
+    },
+    {
+      "sample_id": "M20_M20Q02275_R03_S04",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.186452627182007
+    },
+    {
+      "sample_id": "M20_M20Q05121_R02_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.1858739852905273
+    },
+    {
+      "sample_id": "M20_M20Q00087_R01_S01",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.178954839706421
+    },
+    {
+      "sample_id": "M20_M20Q03161_R02_S02",
+      "match_type": "weak",
+      "failed_constraint_count": 1,
+      "loss": 2.1766645908355713
+    }
+  ],
+  "important_note": "This score uses only the Main-20K training pool and the base TinyLlama model. The reserved final-blind signatures are not accessed."
+}
