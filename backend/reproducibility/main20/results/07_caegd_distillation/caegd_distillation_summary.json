@@ -1,0 +1,49 @@
+{
+  "method": "Constraint-Aware Evidence-Grounded Data Distillation (CAEGD)",
+  "seed": 20260813,
+  "source_train_samples": 15983,
+  "source_train_signatures": 500,
+  "subsets": {
+    "25pct": {
+      "samples": 3996,
+      "signatures": 500,
+      "queries": 3874,
+      "restaurants": 397,
+      "match": {
+        "weak": 1397,
+        "partial": 2196,
+        "full": 403
+      },
+      "file": "train_caegd_25pct.jsonl"
+    },
+    "50pct": {
+      "samples": 7992,
+      "signatures": 500,
+      "queries": 5782,
+      "restaurants": 427,
+      "match": {
+        "weak": 3034,
+        "partial": 3631,
+        "full": 1327
+      },
+      "file": "train_caegd_50pct.jsonl"
+    },
+    "75pct": {
+      "samples": 11987,
+      "signatures": 500,
+      "queries": 5871,
+      "restaurants": 430,
+      "match": {
+        "weak": 4589,
+        "partial": 4583,
+        "full": 2815
+      },
+      "file": "train_caegd_75pct.jsonl"
+    }
+  },
+  "nested_checks": {
+    "25_in_50": true,
+    "50_in_75": true,
+    "75_in_100": true
+  }
+}

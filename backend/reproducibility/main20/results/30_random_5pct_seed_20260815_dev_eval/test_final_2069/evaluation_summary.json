@@ -1,0 +1,135 @@
+{
+  "experiment": "fitness_home_tinyllama_base_vs_lora_v1",
+  "split": "test",
+  "is_final_test_evaluation": true,
+  "sample_count": 2069,
+  "seed": 42,
+  "base_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "adapter_directory": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/29_random_5pct_seed_20260815/full_run_frozen/final_adapter",
+  "generation_configuration": {
+    "max_input_tokens": 512,
+    "max_new_tokens": 180,
+    "batch_size": 8,
+    "do_sample": false,
+    "num_beams": 1,
+    "repetition_penalty": 1.05
+  },
+  "source_file": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/04_main20k_split/test.jsonl",
+  "source_sha256": "b8cc6df07e30d057950ab24f72d7d1cef499aaf3cf9c2a2be6e34f26398e0c51",
+  "base": {
+    "sample_count": 2069,
+    "format_success_rate": 0.976317,
+    "faithfulness_rate": 0.773804,
+    "hallucination_rate": 0.226196,
+    "restaurant_mention_accuracy": 0.948768,
+    "numeric_faithfulness_rate": 0.877719,
+    "prompt_leakage_rate": 0.023683,
+    "unsupported_health_or_goal_claim_rate": 0.042533,
+    "mean_constraint_coverage_rate": 0.977968,
+    "mean_failed_constraint_coverage_rate": 0.973175,
+    "mean_reference_token_f1": 0.407203,
+    "mean_rouge_l_f1": 0.250799,
+    "mean_word_count": 106.593,
+    "generation_seconds": 888.759,
+    "samples_per_second": 2.327965
+  },
+  "lora": {
+    "sample_count": 2069,
+    "format_success_rate": 1.0,
+    "faithfulness_rate": 0.980184,
+    "hallucination_rate": 0.019816,
+    "restaurant_mention_accuracy": 0.9971,
+    "numeric_faithfulness_rate": 0.983084,
+    "prompt_leakage_rate": 0.0,
+    "unsupported_health_or_goal_claim_rate": 0.0,
+    "mean_constraint_coverage_rate": 0.963106,
+    "mean_failed_constraint_coverage_rate": 0.991381,
+    "mean_reference_token_f1": 0.715953,
+    "mean_rouge_l_f1": 0.590384,
+    "mean_word_count": 62.6,
+    "generation_seconds": 915.995,
+    "samples_per_second": 2.258745
+  },
+  "comparison": {
+    "faithfulness_rate": {
+      "base": 0.773804,
+      "lora": 0.980184,
+      "absolute_change_lora_minus_base": 0.20638
+    },
+    "format_success_rate": {
+      "base": 0.976317,
+      "lora": 1.0,
+      "absolute_change_lora_minus_base": 0.023683
+    },
+    "generation_seconds": {
+      "base": 888.759,
+      "lora": 915.995,
+      "absolute_change_lora_minus_base": 27.236
+    },
+    "hallucination_rate": {
+      "base": 0.226196,
+      "lora": 0.019816,
+      "absolute_change_lora_minus_base": -0.20638
+    },
+    "mean_constraint_coverage_rate": {
+      "base": 0.977968,
+      "lora": 0.963106,
+      "absolute_change_lora_minus_base": -0.014862
+    },
+    "mean_failed_constraint_coverage_rate": {
+      "base": 0.973175,
+      "lora": 0.991381,
+      "absolute_change_lora_minus_base": 0.018206
+    },
+    "mean_reference_token_f1": {
+      "base": 0.407203,
+      "lora": 0.715953,
+      "absolute_change_lora_minus_base": 0.30875
+    },
+    "mean_rouge_l_f1": {
+      "base": 0.250799,
+      "lora": 0.590384,
+      "absolute_change_lora_minus_base": 0.339585
+    },
+    "mean_word_count": {
+      "base": 106.593,
+      "lora": 62.6,
+      "absolute_change_lora_minus_base": -43.993
+    },
+    "numeric_faithfulness_rate": {
+      "base": 0.877719,
+      "lora": 0.983084,
+      "absolute_change_lora_minus_base": 0.105365
+    },
+    "prompt_leakage_rate": {
+      "base": 0.023683,
+      "lora": 0.0,
+      "absolute_change_lora_minus_base": -0.023683
+    },
+    "restaurant_mention_accuracy": {
+      "base": 0.948768,
+      "lora": 0.9971,
+      "absolute_change_lora_minus_base": 0.048332
+    },
+    "samples_per_second": {
+      "base": 2.327965,
+      "lora": 2.258745,
+      "absolute_change_lora_minus_base": -0.06922
+    },
+    "unsupported_health_or_goal_claim_rate": {
+      "base": 0.042533,
+      "lora": 0.0,
+      "absolute_change_lora_minus_base": -0.042533
+    }
+  },
+  "metric_notes": {
+    "faithfulness_pass": "Selected restaurant mentioned; no unsupported number, prompt leakage, or flagged unsupported health/goal claim.",
+    "hallucination": "Unsupported number, missing selected restaurant mention, prompt leakage, or flagged unsupported health/goal claim.",
+    "reference_metrics": "Token F1 and ROUGE-L F1 against the frozen Teacher reference are supporting metrics, not standalone factuality metrics."
+  },
+  "files": {
+    "base_predictions": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/30_random_5pct_seed_20260815_dev_eval/test_final_2069/base_predictions_scored.jsonl",
+    "lora_predictions": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/30_random_5pct_seed_20260815_dev_eval/test_final_2069/lora_predictions_scored.jsonl",
+    "paired_predictions": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/30_random_5pct_seed_20260815_dev_eval/test_final_2069/paired_predictions.csv"
+  }
+}

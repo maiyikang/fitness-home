@@ -1,0 +1,20 @@
+{
+  "source_accepted": 20415,
+  "unique_after_exact_output_dedup": 20366,
+  "exact_duplicate_samples_removed": 49,
+  "frozen_count": 20000,
+  "unique_signatures": 625,
+  "unique_queries": 7342,
+  "unique_restaurants": 451,
+  "match_distribution": {
+    "partial": 6296,
+    "weak": 7067,
+    "full": 6637
+  },
+  "target_match_distribution": {
+    "partial": 6296,
+    "weak": 7067,
+    "full": 6637
+  },
+  "seed": 20260813
+}

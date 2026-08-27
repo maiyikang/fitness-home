@@ -1,0 +1,146 @@
+{
+  "experiment": "fitness_home_single_hybrid_rrf_decision_v1",
+  "development_only": true,
+  "blind_test_used": false,
+  "query_count": 7500,
+  "rrf_k": 60,
+  "source_candidate_k": 50,
+  "fused_candidate_k": 50,
+  "top_k": 5,
+  "methods": {
+    "B1_BM25": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.11677333333333334,
+      "mean_recall_at_5": 0.06507423789518221,
+      "mrr": 0.21962666666666666,
+      "mean_ndcg_at_5": 0.13014011715576498,
+      "hit_at_5_rate": 0.3912,
+      "mean_relevant_count_at_5": 0.5838666666666666,
+      "mean_top1_constraint_satisfaction": 0.5066444444444445,
+      "mean_best_at_5_constraint_satisfaction": 0.775711111111111,
+      "full_match_at_1_rate": 0.1284,
+      "full_match_at_5_rate": 0.3912,
+      "unique_top1_restaurants": 109,
+      "most_common_top1": [
+        "4650",
+        1634
+      ],
+      "largest_top1_share": 0.21786666666666665,
+      "diversity_key": "restaurant_id"
+    },
+    "B2_BM25_ConstraintRerank": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.5472533333333333,
+      "mean_recall_at_5": 0.2907991894506824,
+      "mrr": 0.8216,
+      "mean_ndcg_at_5": 0.6820535848104502,
+      "hit_at_5_rate": 0.8216,
+      "mean_relevant_count_at_5": 2.736266666666667,
+      "mean_top1_constraint_satisfaction": 0.9511,
+      "mean_best_at_5_constraint_satisfaction": 0.9511,
+      "full_match_at_1_rate": 0.8216,
+      "full_match_at_5_rate": 0.8216,
+      "unique_top1_restaurants": 209,
+      "most_common_top1": [
+        "1488",
+        397
+      ],
+      "largest_top1_share": 0.05293333333333333,
+      "diversity_key": "restaurant_id"
+    },
+    "B3_DenseBGE": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.2691733333333333,
+      "mean_recall_at_5": 0.08522360373249695,
+      "mrr": 0.38977333333333336,
+      "mean_ndcg_at_5": 0.2858793457197837,
+      "hit_at_5_rate": 0.5188,
+      "mean_relevant_count_at_5": 1.3458666666666668,
+      "mean_top1_constraint_satisfaction": 0.7240888888888889,
+      "mean_best_at_5_constraint_satisfaction": 0.8458444444444444,
+      "full_match_at_1_rate": 0.3152,
+      "full_match_at_5_rate": 0.5188,
+      "unique_top1_restaurants": 195,
+      "most_common_top1": [
+        "4488",
+        624
+      ],
+      "largest_top1_share": 0.0832,
+      "diversity_key": "restaurant_id"
+    },
+    "B4_DenseBGE_ConstraintRerank": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.5468,
+      "mean_recall_at_5": 0.21680983316941366,
+      "mrr": 0.7284,
+      "mean_ndcg_at_5": 0.6246227212905324,
+      "hit_at_5_rate": 0.7284,
+      "mean_relevant_count_at_5": 2.734,
+      "mean_top1_constraint_satisfaction": 0.9243888888888889,
+      "mean_best_at_5_constraint_satisfaction": 0.9243888888888889,
+      "full_match_at_1_rate": 0.7284,
+      "full_match_at_5_rate": 0.7284,
+      "unique_top1_restaurants": 247,
+      "most_common_top1": [
+        "2964",
+        532
+      ],
+      "largest_top1_share": 0.07093333333333333,
+      "diversity_key": "restaurant_id"
+    },
+    "B5_StructuredConstraintOracle": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.84032,
+      "mean_recall_at_5": 0.5170812249990898,
+      "mrr": 1.0,
+      "mean_ndcg_at_5": 1.0,
+      "hit_at_5_rate": 1.0,
+      "mean_relevant_count_at_5": 4.2016,
+      "mean_top1_constraint_satisfaction": 1.0,
+      "mean_best_at_5_constraint_satisfaction": 1.0,
+      "full_match_at_1_rate": 1.0,
+      "full_match_at_5_rate": 1.0,
+      "unique_top1_restaurants": 42,
+      "most_common_top1": [
+        "129",
+        948
+      ],
+      "largest_top1_share": 0.1264,
+      "diversity_key": "restaurant_id"
+    },
+    "B6_HybridRRF_ConstraintRerank": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.5934133333333333,
+      "mean_recall_at_5": 0.30083991987246494,
+      "mrr": 0.8546666666666667,
+      "mean_ndcg_at_5": 0.7237781271967771,
+      "hit_at_5_rate": 0.8546666666666667,
+      "mean_relevant_count_at_5": 2.9670666666666667,
+      "mean_top1_constraint_satisfaction": 0.9599444444444444,
+      "mean_best_at_5_constraint_satisfaction": 0.9599444444444444,
+      "full_match_at_1_rate": 0.8546666666666667,
+      "full_match_at_5_rate": 0.8546666666666667,
+      "unique_top1_restaurants": 297,
+      "most_common_top1": [
+        "2537",
+        341
+      ],
+      "largest_top1_share": 0.04546666666666667,
+      "diversity_key": "restaurant_id"
+    }
+  },
+  "decision": {
+    "frozen_decision_rule": "Recommend Hybrid only if it significantly improves Recall@5, nDCG@5, and Hit@5 over B2, while observed Top-1 Constraint Satisfaction is not lower than B2.",
+    "criteria": {
+      "recall_significantly_higher": true,
+      "ndcg_significantly_higher": true,
+      "hit_significantly_higher": true,
+      "top1_csr_not_lower": true
+    },
+    "recommended_final_retriever": "B6_HybridRRF_ConstraintRerank",
+    "hybrid_selected": true,
+    "important_note": "This is a single frozen fusion test using RRF k=60 and a fixed fused candidate budget of 50. No fusion weight or RRF parameter sweep is permitted after result inspection."
+  },
+  "frozen_input_directory": "/workspace/fitness-home/backend/experiments/2026_08_week2/03_main20k/43_retrieval_baseline_eval/development_7500_frozen",
+  "frozen_input_checksums_verified": true
+}

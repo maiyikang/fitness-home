@@ -1,0 +1,45 @@
+{
+  "seed": 20260813,
+  "group_key": "constraint_signature_id",
+  "total_samples": 20000,
+  "total_signatures": 625,
+  "train": {
+    "samples": 15983,
+    "signatures": 500,
+    "queries": 5876,
+    "restaurants": 430,
+    "match": {
+      "partial": 4967,
+      "weak": 5608,
+      "full": 5408
+    }
+  },
+  "validation": {
+    "samples": 1948,
+    "signatures": 62,
+    "queries": 722,
+    "restaurants": 233,
+    "match": {
+      "partial": 597,
+      "weak": 769,
+      "full": 582
+    }
+  },
+  "test": {
+    "samples": 2069,
+    "signatures": 63,
+    "queries": 744,
+    "restaurants": 239,
+    "match": {
+      "weak": 690,
+      "full": 647,
+      "partial": 732
+    }
+  },
+  "leakage_checks": {
+    "train_val_signature_overlap": 0,
+    "train_test_signature_overlap": 0,
+    "val_test_signature_overlap": 0
+  },
+  "important_rule": "The test split is frozen and must not be used for prompt/filter/training decisions."
+}

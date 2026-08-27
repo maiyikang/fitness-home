@@ -1,0 +1,97 @@
+{
+  "experiment": "fitness_home_retrieval_baseline_v1",
+  "development_only": true,
+  "blind_test_used": false,
+  "query_count": 7500,
+  "top_k": 5,
+  "candidate_k": 50,
+  "methods": {
+    "B1_BM25": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.11677333333333334,
+      "mean_recall_at_5": 0.06507423789518221,
+      "mrr": 0.21962666666666666,
+      "mean_ndcg_at_5": 0.13014011715576498,
+      "hit_at_5_rate": 0.3912,
+      "mean_relevant_count_at_5": 0.5838666666666666,
+      "mean_top1_constraint_satisfaction": 0.5066444444444445,
+      "mean_best_at_5_constraint_satisfaction": 0.775711111111111,
+      "full_match_at_1_rate": 0.1284,
+      "full_match_at_5_rate": 0.3912,
+      "unique_top1_restaurants": 0,
+      "most_common_top1": null,
+      "largest_top1_share": 0.0
+    },
+    "B2_BM25_ConstraintRerank": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.5472533333333333,
+      "mean_recall_at_5": 0.2907991894506824,
+      "mrr": 0.8216,
+      "mean_ndcg_at_5": 0.6820535848104502,
+      "hit_at_5_rate": 0.8216,
+      "mean_relevant_count_at_5": 2.736266666666667,
+      "mean_top1_constraint_satisfaction": 0.9511,
+      "mean_best_at_5_constraint_satisfaction": 0.9511,
+      "full_match_at_1_rate": 0.8216,
+      "full_match_at_5_rate": 0.8216,
+      "unique_top1_restaurants": 0,
+      "most_common_top1": null,
+      "largest_top1_share": 0.0
+    },
+    "B3_DenseBGE": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.2691733333333333,
+      "mean_recall_at_5": 0.08522360373249695,
+      "mrr": 0.38977333333333336,
+      "mean_ndcg_at_5": 0.2858793457197837,
+      "hit_at_5_rate": 0.5188,
+      "mean_relevant_count_at_5": 1.3458666666666668,
+      "mean_top1_constraint_satisfaction": 0.7240888888888889,
+      "mean_best_at_5_constraint_satisfaction": 0.8458444444444444,
+      "full_match_at_1_rate": 0.3152,
+      "full_match_at_5_rate": 0.5188,
+      "unique_top1_restaurants": 191,
+      "most_common_top1": [
+        "Il Luigi Italian Cuisine",
+        624
+      ],
+      "largest_top1_share": 0.0832
+    },
+    "B4_DenseBGE_ConstraintRerank": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.5468,
+      "mean_recall_at_5": 0.21680983316941366,
+      "mrr": 0.7284,
+      "mean_ndcg_at_5": 0.6246227212905324,
+      "hit_at_5_rate": 0.7284,
+      "mean_relevant_count_at_5": 2.734,
+      "mean_top1_constraint_satisfaction": 0.9243888888888889,
+      "mean_best_at_5_constraint_satisfaction": 0.9243888888888889,
+      "full_match_at_1_rate": 0.7284,
+      "full_match_at_5_rate": 0.7284,
+      "unique_top1_restaurants": 241,
+      "most_common_top1": [
+        "New Seoul Korean restaurant",
+        532
+      ],
+      "largest_top1_share": 0.07093333333333333
+    },
+    "B5_StructuredConstraintOracle": {
+      "query_count": 7500,
+      "mean_precision_at_5": 0.84032,
+      "mean_recall_at_5": 0.5170812249990898,
+      "mrr": 1.0,
+      "mean_ndcg_at_5": 1.0,
+      "hit_at_5_rate": 1.0,
+      "mean_relevant_count_at_5": 4.2016,
+      "mean_top1_constraint_satisfaction": 1.0,
+      "mean_best_at_5_constraint_satisfaction": 1.0,
+      "full_match_at_1_rate": 1.0,
+      "full_match_at_5_rate": 1.0,
+      "unique_top1_restaurants": 0,
+      "most_common_top1": null,
+      "largest_top1_share": 0.0
+    }
+  },
+  "structured_oracle_note": "B5 receives frozen parsed constraints and is reported as a structured ceiling."
+}

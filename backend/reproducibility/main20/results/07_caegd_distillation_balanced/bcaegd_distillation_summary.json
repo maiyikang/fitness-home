@@ -1,0 +1,77 @@
+{
+  "method": "Balanced Constraint-Aware Evidence-Grounded Data Distillation (B-CAEGD)",
+  "seed": 20260813,
+  "source_train_samples": 15983,
+  "source_train_signatures": 500,
+  "source_match_distribution": {
+    "partial": 4967,
+    "weak": 5608,
+    "full": 5408
+  },
+  "design": {
+    "quality_gate": "Teacher-v4 + frozen Filter-v2.3 + exact dedup",
+    "coverage": "all 500 train constraint signatures preserved",
+    "distribution": "Full/Weak/Partial proportions preserved using largest-remainder quotas",
+    "hard_examples": "near-boundary numeric cases and failed constraints receive higher utility",
+    "diversity": "rare restaurants and rare query paraphrases receive higher utility",
+    "nested": "25% subset of 50%; 50% subset of 75%"
+  },
+  "subsets": {
+    "25pct": {
+      "samples": 3996,
+      "target_match": {
+        "partial": 1242,
+        "weak": 1402,
+        "full": 1352
+      },
+      "signatures": 500,
+      "queries": 2915,
+      "restaurants": 421,
+      "match": {
+        "weak": 1402,
+        "partial": 1242,
+        "full": 1352
+      },
+      "file": "train_bcaegd_25pct.jsonl"
+    },
+    "50pct": {
+      "samples": 7992,
+      "target_match": {
+        "partial": 2484,
+        "weak": 2804,
+        "full": 2704
+      },
+      "signatures": 500,
+      "queries": 4565,
+      "restaurants": 430,
+      "match": {
+        "weak": 2804,
+        "partial": 2484,
+        "full": 2704
+      },
+      "file": "train_bcaegd_50pct.jsonl"
+    },
+    "75pct": {
+      "samples": 11987,
+      "target_match": {
+        "partial": 3725,
+        "weak": 4206,
+        "full": 4056
+      },
+      "signatures": 500,
+      "queries": 5524,
+      "restaurants": 430,
+      "match": {
+        "weak": 4206,
+        "partial": 3725,
+        "full": 4056
+      },
+      "file": "train_bcaegd_75pct.jsonl"
+    }
+  },
+  "nested_checks": {
+    "25_in_50": true,
+    "50_in_75": true,
+    "75_in_100": true
+  }
+}

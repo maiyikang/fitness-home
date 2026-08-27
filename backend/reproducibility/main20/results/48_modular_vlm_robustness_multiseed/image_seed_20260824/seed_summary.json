@@ -1,0 +1,43 @@
+{
+  "image_seed": 20260824,
+  "sample_count": 300,
+  "visual_cuisine_accuracy": 0.6566666666666666,
+  "visual_relation_safety_accuracy": 0.7633333333333333,
+  "visual_quality_safety_accuracy": 0.8533333333333334,
+  "json_parse_success_rate": 1.0,
+  "gate_safety_accuracy": 0.6866666666666666,
+  "conflict_resolution_exact_accuracy": 0.7666666666666667,
+  "database_override_error_rate": 0.0,
+  "text_exact_accuracy": 0.43333333333333335,
+  "text_faithfulness_rate": 0.99,
+  "multimodal_exact_accuracy": 0.31333333333333335,
+  "scenarios": {
+    "aligned_clear": {
+      "sample_count": 120,
+      "visual_cuisine_accuracy": 0.7833333333333333,
+      "visual_relation_safety_accuracy": 0.7833333333333333,
+      "visual_quality_safety_accuracy": 0.9833333333333333,
+      "gate_safety_accuracy": 0.775,
+      "conflict_resolution_exact_accuracy": null,
+      "multimodal_exact_accuracy": 0.38333333333333336
+    },
+    "aligned_noisy": {
+      "sample_count": 60,
+      "visual_cuisine_accuracy": 0.15,
+      "visual_relation_safety_accuracy": 0.26666666666666666,
+      "visual_quality_safety_accuracy": 0.3333333333333333,
+      "gate_safety_accuracy": 0.3333333333333333,
+      "conflict_resolution_exact_accuracy": null,
+      "multimodal_exact_accuracy": 0.05
+    },
+    "conflict_clear": {
+      "sample_count": 120,
+      "visual_cuisine_accuracy": 0.7833333333333333,
+      "visual_relation_safety_accuracy": 0.9916666666666667,
+      "visual_quality_safety_accuracy": 0.9833333333333333,
+      "gate_safety_accuracy": 0.775,
+      "conflict_resolution_exact_accuracy": 0.7666666666666667,
+      "multimodal_exact_accuracy": 0.375
+    }
+  }
+}
